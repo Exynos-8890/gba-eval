@@ -1,6 +1,12 @@
 use crate::result::CompareResult;
 use crate::video;
-use crate::{diff_frame, is_flat_frame, luma_mae, ref_in_motion, GBA_PIXELS, NOISE_FLOOR};
+use crate::{
+    diff_frame, is_flat_frame, luma_mae, quant5, ref_in_motion, GBA_H, GBA_PIXELS, GBA_W,
+    NOISE_FLOOR,
+};
+
+const TEMPORAL_TILE_SIZE: usize = 10;
+const STATIC_MOTION_DEFECT: f32 = 0.001;
 
 pub fn compare_framebuffers_lockstep(
     reference: &[[u32; GBA_PIXELS]],
@@ -45,8 +51,295 @@ pub fn compare_framebuffers_lockstep(
     }
 
     result.frame_diff_threshold = video::defect_threshold_clamped(&mut ref_defects);
-    result.replay_score_deduped = replay_score_deduped(&result.histogram, &new_run, result.frame_diff_threshold);
+    result.replay_score_deduped =
+        replay_score_deduped(&result.histogram, &new_run, result.frame_diff_threshold);
     result
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct TemporalAnalysis {
+    pub max_offset: i32,
+    pub global: TemporalOffsetEstimate,
+    pub tile_size: usize,
+    pub tile_grid_width: usize,
+    pub tile_grid_height: usize,
+    pub tiles: Vec<TileTemporalOffset>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct TemporalOffsetEstimate {
+    pub best_offset: Option<i32>,
+    pub lockstep_defect: f32,
+    pub best_defect: f32,
+    pub improvement: f32,
+    pub offset_defects: Vec<OffsetDefect>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct OffsetDefect {
+    pub offset: i32,
+    pub defect: f32,
+    pub overlap_frames: usize,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct TileTemporalOffset {
+    pub x: usize,
+    pub y: usize,
+    pub width: usize,
+    pub height: usize,
+    pub motion_defect: f32,
+    pub best_offset: Option<i32>,
+    pub lockstep_defect: f32,
+    pub best_defect: f32,
+    pub improvement: f32,
+    pub confidence: f32,
+}
+
+pub fn analyze_temporal_offsets(
+    reference: &[[u32; GBA_PIXELS]],
+    candidate: &[[u32; GBA_PIXELS]],
+    max_offset: i32,
+) -> TemporalAnalysis {
+    assert!(max_offset >= 0, "max_offset must be non-negative");
+    let global = analyze_global_temporal_offset(reference, candidate, max_offset);
+    let mut tiles = Vec::new();
+
+    for y in (0..GBA_H).step_by(TEMPORAL_TILE_SIZE) {
+        for x in (0..GBA_W).step_by(TEMPORAL_TILE_SIZE) {
+            let width = TEMPORAL_TILE_SIZE.min(GBA_W - x);
+            let height = TEMPORAL_TILE_SIZE.min(GBA_H - y);
+            tiles.push(analyze_tile_temporal_offset(
+                reference, candidate, max_offset, x, y, width, height,
+            ));
+        }
+    }
+
+    TemporalAnalysis {
+        max_offset,
+        global,
+        tile_size: TEMPORAL_TILE_SIZE,
+        tile_grid_width: GBA_W / TEMPORAL_TILE_SIZE,
+        tile_grid_height: GBA_H / TEMPORAL_TILE_SIZE,
+        tiles,
+    }
+}
+
+pub fn temporal_offset_heatmap(analysis: &TemporalAnalysis) -> [u32; GBA_PIXELS] {
+    let mut frame = [0xFF40_4040; GBA_PIXELS];
+    for tile in &analysis.tiles {
+        let color = temporal_offset_color(tile.best_offset, tile.confidence);
+        for y in tile.y..(tile.y + tile.height) {
+            for x in tile.x..(tile.x + tile.width) {
+                frame[y * GBA_W + x] = color;
+            }
+        }
+    }
+    frame
+}
+
+fn temporal_offset_color(offset: Option<i32>, confidence: f32) -> u32 {
+    let Some(offset) = offset else {
+        return 0xFF40_4040;
+    };
+    if offset == 0 {
+        return 0xFF60_D060;
+    }
+
+    let strength = (0.45 + confidence.min(0.15) * 3.0).min(1.0);
+    let bright = (120.0 + 135.0 * strength) as u32;
+    let dim = 48u32;
+    if offset > 0 {
+        // 0xAABBGGRR: blue means the candidate matches a later frame.
+        0xFF00_0000 | (bright << 16) | (96 << 8) | dim
+    } else {
+        // Red means the candidate matches an earlier frame.
+        0xFF00_0000 | (dim << 16) | (80 << 8) | bright
+    }
+}
+
+fn analyze_global_temporal_offset(
+    reference: &[[u32; GBA_PIXELS]],
+    candidate: &[[u32; GBA_PIXELS]],
+    max_offset: i32,
+) -> TemporalOffsetEstimate {
+    estimate_temporal_offset(max_offset, |offset| {
+        mean_offset_defect(reference.len(), candidate.len(), offset, |r, c| {
+            let mut defect = video::ssim_floored(&reference[r], &candidate[c]);
+            if is_flat_frame(&candidate[c]) && !is_flat_frame(&reference[r]) {
+                defect = 1.0;
+            }
+            defect
+        })
+    })
+}
+
+fn analyze_tile_temporal_offset(
+    reference: &[[u32; GBA_PIXELS]],
+    candidate: &[[u32; GBA_PIXELS]],
+    max_offset: i32,
+    x: usize,
+    y: usize,
+    width: usize,
+    height: usize,
+) -> TileTemporalOffset {
+    let motion_defect = reference_motion_defect(reference, x, y, width, height);
+    let estimate = estimate_temporal_offset(max_offset, |offset| {
+        mean_offset_defect(reference.len(), candidate.len(), offset, |r, c| {
+            tile_pair_defect(&reference[r], &candidate[c], x, y, width, height)
+        })
+    });
+    let best_offset = if motion_defect < STATIC_MOTION_DEFECT {
+        None
+    } else {
+        estimate.best_offset
+    };
+
+    TileTemporalOffset {
+        x,
+        y,
+        width,
+        height,
+        motion_defect,
+        best_offset,
+        lockstep_defect: estimate.lockstep_defect,
+        best_defect: estimate.best_defect,
+        improvement: estimate.improvement,
+        confidence: offset_confidence(&estimate.offset_defects),
+    }
+}
+
+fn estimate_temporal_offset(
+    max_offset: i32,
+    mut defect_for_offset: impl FnMut(i32) -> Option<OffsetDefect>,
+) -> TemporalOffsetEstimate {
+    let mut offset_defects = Vec::new();
+    for offset in -max_offset..=max_offset {
+        if let Some(defect) = defect_for_offset(offset) {
+            offset_defects.push(defect);
+        }
+    }
+
+    let lockstep_defect = offset_defects
+        .iter()
+        .find(|item| item.offset == 0)
+        .map(|item| item.defect)
+        .unwrap_or(1.0);
+    let best = offset_defects
+        .iter()
+        .min_by(|a, b| compare_offset_defects(a, b));
+    let (best_offset, best_defect) = match best {
+        Some(item) => (Some(item.offset), item.defect),
+        None => (None, lockstep_defect),
+    };
+
+    TemporalOffsetEstimate {
+        best_offset,
+        lockstep_defect,
+        best_defect,
+        improvement: (lockstep_defect - best_defect).max(0.0),
+        offset_defects,
+    }
+}
+
+fn compare_offset_defects(a: &OffsetDefect, b: &OffsetDefect) -> std::cmp::Ordering {
+    const EPS: f32 = 1.0e-7;
+    if (a.defect - b.defect).abs() > EPS {
+        return a
+            .defect
+            .partial_cmp(&b.defect)
+            .unwrap_or(std::cmp::Ordering::Equal);
+    }
+    let a_abs = a.offset.abs();
+    let b_abs = b.offset.abs();
+    a_abs.cmp(&b_abs).then_with(|| a.offset.cmp(&b.offset))
+}
+
+fn offset_confidence(offset_defects: &[OffsetDefect]) -> f32 {
+    if offset_defects.len() < 2 {
+        return 0.0;
+    }
+    let mut defects = offset_defects
+        .iter()
+        .map(|item| item.defect)
+        .collect::<Vec<_>>();
+    defects.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    (defects[1] - defects[0]).max(0.0)
+}
+
+fn mean_offset_defect(
+    reference_len: usize,
+    candidate_len: usize,
+    offset: i32,
+    mut pair_defect: impl FnMut(usize, usize) -> f32,
+) -> Option<OffsetDefect> {
+    let mut sum = 0.0f32;
+    let mut count = 0usize;
+
+    for ref_index in 0..reference_len {
+        let cand_index = ref_index as i32 + offset;
+        if cand_index < 0 || cand_index >= candidate_len as i32 {
+            continue;
+        }
+        sum += pair_defect(ref_index, cand_index as usize);
+        count += 1;
+    }
+
+    (count > 0).then_some(OffsetDefect {
+        offset,
+        defect: sum / count as f32,
+        overlap_frames: count,
+    })
+}
+
+fn reference_motion_defect(
+    reference: &[[u32; GBA_PIXELS]],
+    x: usize,
+    y: usize,
+    width: usize,
+    height: usize,
+) -> f32 {
+    if reference.len() < 2 {
+        return 0.0;
+    }
+    let mut sum = 0.0f32;
+    for index in 1..reference.len() {
+        sum += tile_pair_defect(
+            &reference[index - 1],
+            &reference[index],
+            x,
+            y,
+            width,
+            height,
+        );
+    }
+    sum / (reference.len() - 1) as f32
+}
+
+fn tile_pair_defect(
+    reference: &[u32; GBA_PIXELS],
+    candidate: &[u32; GBA_PIXELS],
+    x: usize,
+    y: usize,
+    width: usize,
+    height: usize,
+) -> f32 {
+    let mut diff = 0usize;
+    let mut total = 0usize;
+    for py in y..(y + height) {
+        for px in x..(x + width) {
+            let index = py * GBA_W + px;
+            if quant5(reference[index]) != quant5(candidate[index]) {
+                diff += 1;
+            }
+            total += 1;
+        }
+    }
+    if total == 0 {
+        0.0
+    } else {
+        diff as f32 / total as f32
+    }
 }
 
 fn replay_score_deduped(histogram: &[f32], new_run: &[bool], tau: f32) -> f32 {
