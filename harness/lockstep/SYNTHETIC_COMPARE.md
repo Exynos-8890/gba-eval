@@ -58,6 +58,8 @@ Without `--summary-only`, `--temporal-window N` adds the full
 - `summary.global_improvement`: how much the whole-frame defect improves
   after applying the best offset.
 - `summary.region_count`: how many local time-offset regions were found.
+- `summary.has_mixed_local_offsets`: whether the scene contains multiple
+  distinct local offsets.
 - `summary.local_offsets`: local time-offset groups aggregated by offset,
   including region count, tile count, bounding box, and mean confidence.
 - `summary.top_regions`: the largest local time-offset regions, useful

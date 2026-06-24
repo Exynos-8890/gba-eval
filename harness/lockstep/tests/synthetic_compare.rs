@@ -225,6 +225,16 @@ fn temporal_summary_groups_local_regions_by_offset() {
         .local_offsets
         .iter()
         .all(|item| item.region_count > 0 && item.tile_count > 0));
+    assert!(analysis.summary.has_mixed_local_offsets);
+}
+
+#[test]
+fn temporal_summary_marks_single_local_offset_as_not_mixed() {
+    let (reference, candidate) = menu_snow_demo_sequences(18, 20, 2);
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    assert!(!analysis.summary.has_mixed_local_offsets);
 }
 
 #[test]

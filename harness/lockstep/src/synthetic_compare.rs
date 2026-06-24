@@ -80,6 +80,7 @@ pub struct TemporalSummary {
     pub global_best_defect: f32,
     pub global_improvement: f32,
     pub region_count: usize,
+    pub has_mixed_local_offsets: bool,
     pub local_offsets: Vec<LocalOffsetSummary>,
     pub top_regions: Vec<TemporalRegion>,
 }
@@ -330,13 +331,15 @@ fn temporal_summary(
     global: &TemporalOffsetEstimate,
     regions: &[TemporalRegion],
 ) -> TemporalSummary {
+    let local_offsets = local_offset_summaries(regions);
     TemporalSummary {
         global_best_offset: global.best_offset,
         global_lockstep_defect: global.lockstep_defect,
         global_best_defect: global.best_defect,
         global_improvement: global.improvement,
         region_count: regions.len(),
-        local_offsets: local_offset_summaries(regions),
+        has_mixed_local_offsets: local_offsets.len() > 1,
+        local_offsets,
         top_regions: regions
             .iter()
             .take(SUMMARY_TOP_REGION_COUNT)
