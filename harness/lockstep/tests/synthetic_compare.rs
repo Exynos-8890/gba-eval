@@ -1,5 +1,6 @@
 use lockstep::synthetic_compare::{
     analyze_temporal_offsets, compare_framebuffers_lockstep, temporal_offset_heatmap,
+    temporal_region_overlay,
 };
 use lockstep::{GBA_H, GBA_PIXELS, GBA_W};
 
@@ -155,4 +156,24 @@ fn temporal_heatmap_marks_static_and_shifted_regions_differently() {
     let shifted_px = heatmap[(shifted_tile.y + 1) * GBA_W + shifted_tile.x + 1];
 
     assert_ne!(static_menu_px, shifted_px);
+}
+
+#[test]
+fn temporal_region_overlay_draws_boxes_on_reference_frame() {
+    let reference: Vec<_> = (0..18).map(|t| menu_snow_scene(t)).collect();
+    let candidate: Vec<_> = (0..20).map(|t| menu_snow_scene(t - 2)).collect();
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    let region = analysis
+        .regions
+        .iter()
+        .find(|region| region.offset == 2 && region.x >= 120 && region.tile_count > 1)
+        .expect("expected a shifted region");
+    let overlay = temporal_region_overlay(&reference[0], &analysis);
+
+    let untouched_menu_px = overlay[40 * GBA_W + 20];
+    let region_border_px = overlay[region.y * GBA_W + region.x];
+
+    assert_eq!(untouched_menu_px, reference[0][40 * GBA_W + 20]);
+    assert_ne!(region_border_px, reference[0][region.y * GBA_W + region.x]);
 }

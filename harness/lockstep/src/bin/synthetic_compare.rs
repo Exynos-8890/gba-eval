@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use lockstep::media::write_png;
 use lockstep::synthetic_compare::{
     analyze_temporal_offsets, compare_framebuffers_lockstep, temporal_offset_heatmap,
+    temporal_region_overlay,
 };
 use lockstep::{GBA_H, GBA_PIXELS, GBA_W};
 use serde_json::json;
@@ -18,6 +19,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|window| analyze_temporal_offsets(&reference, &candidate, window));
     if let (Some(analysis), Some(path)) = (&temporal_analysis, &args.temporal_heatmap_out) {
         write_png(path, &temporal_offset_heatmap(analysis))?;
+    }
+    if let (Some(analysis), Some(path)) = (&temporal_analysis, &args.temporal_region_overlay_out) {
+        write_png(path, &temporal_region_overlay(&reference[0], analysis))?;
     }
 
     println!(
@@ -45,6 +49,7 @@ struct Args {
     candidate: PathBuf,
     temporal_window: Option<i32>,
     temporal_heatmap_out: Option<PathBuf>,
+    temporal_region_overlay_out: Option<PathBuf>,
 }
 
 impl Args {
@@ -53,6 +58,7 @@ impl Args {
         let mut candidate = None;
         let mut temporal_window = None;
         let mut temporal_heatmap_out = None;
+        let mut temporal_region_overlay_out = None;
         let mut args = std::env::args().skip(1);
 
         while let Some(arg) = args.next() {
@@ -70,6 +76,9 @@ impl Args {
                     temporal_window = Some(parsed);
                 }
                 "--temporal-heatmap-out" => temporal_heatmap_out = args.next().map(PathBuf::from),
+                "--temporal-region-overlay-out" => {
+                    temporal_region_overlay_out = args.next().map(PathBuf::from)
+                }
                 "--help" | "-h" => {
                     print_usage();
                     std::process::exit(0);
@@ -78,8 +87,10 @@ impl Args {
             }
         }
 
-        if temporal_heatmap_out.is_some() && temporal_window.is_none() {
-            return Err("--temporal-heatmap-out requires --temporal-window".into());
+        if (temporal_heatmap_out.is_some() || temporal_region_overlay_out.is_some())
+            && temporal_window.is_none()
+        {
+            return Err("temporal image outputs require --temporal-window".into());
         }
 
         match (reference, candidate) {
@@ -88,6 +99,7 @@ impl Args {
                 candidate,
                 temporal_window,
                 temporal_heatmap_out,
+                temporal_region_overlay_out,
             }),
             _ => {
                 print_usage();
@@ -99,7 +111,7 @@ impl Args {
 
 fn print_usage() {
     eprintln!(
-        "usage: synthetic_compare --reference ref_png_dir --candidate candidate_png_dir [--temporal-window N] [--temporal-heatmap-out out.png]"
+        "usage: synthetic_compare --reference ref_png_dir --candidate candidate_png_dir [--temporal-window N] [--temporal-heatmap-out out.png] [--temporal-region-overlay-out out.png]"
     );
 }
 

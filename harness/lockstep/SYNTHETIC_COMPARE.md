@@ -10,7 +10,8 @@ cargo run -p lockstep --bin synthetic_compare -- \
   --reference /path/to/reference_frames \
   --candidate /path/to/candidate_frames \
   --temporal-window 3 \
-  --temporal-heatmap-out results/temporal-offset-heatmap.png
+  --temporal-heatmap-out results/temporal-offset-heatmap.png \
+  --temporal-region-overlay-out results/temporal-region-overlay.png
 ```
 
 The normal lockstep fields still describe strict frame-by-frame scoring:
@@ -34,3 +35,8 @@ When `--temporal-window N` is provided, the output also includes
 The heatmap uses gray for static/no clear offset, green for dynamic
 regions whose best offset is 0, blue for positive offsets, and red for
 negative offsets.
+
+The region overlay keeps the first reference frame as the background and
+draws rectangles around the merged temporal regions. Use it when the
+heatmap is too abstract and you want to see the time-offset regions in
+the original scene.

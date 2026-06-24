@@ -156,6 +156,37 @@ pub fn temporal_offset_heatmap(analysis: &TemporalAnalysis) -> [u32; GBA_PIXELS]
     frame
 }
 
+pub fn temporal_region_overlay(
+    reference: &[u32; GBA_PIXELS],
+    analysis: &TemporalAnalysis,
+) -> [u32; GBA_PIXELS] {
+    let mut frame = *reference;
+    for region in &analysis.regions {
+        let color = temporal_offset_color(Some(region.offset), region.mean_confidence);
+        draw_region_border(&mut frame, region, color);
+    }
+    frame
+}
+
+fn draw_region_border(frame: &mut [u32; GBA_PIXELS], region: &TemporalRegion, color: u32) {
+    if region.width == 0 || region.height == 0 {
+        return;
+    }
+    let left = region.x.min(GBA_W - 1);
+    let top = region.y.min(GBA_H - 1);
+    let right = (region.x + region.width - 1).min(GBA_W - 1);
+    let bottom = (region.y + region.height - 1).min(GBA_H - 1);
+
+    for x in left..=right {
+        frame[top * GBA_W + x] = color;
+        frame[bottom * GBA_W + x] = color;
+    }
+    for y in top..=bottom {
+        frame[y * GBA_W + left] = color;
+        frame[y * GBA_W + right] = color;
+    }
+}
+
 fn temporal_offset_color(offset: Option<i32>, confidence: f32) -> u32 {
     let Some(offset) = offset else {
         return 0xFF40_4040;
