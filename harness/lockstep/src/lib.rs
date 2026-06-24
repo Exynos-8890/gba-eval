@@ -12,6 +12,7 @@ pub mod audio;
 pub mod media;
 pub mod replay;
 pub mod result;
+pub mod synthetic_compare;
 pub mod video;
 pub mod video_encode;
 
