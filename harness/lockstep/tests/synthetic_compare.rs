@@ -1,6 +1,6 @@
 use lockstep::synthetic_compare::{
-    analyze_temporal_offsets, compare_framebuffers_lockstep, temporal_offset_heatmap,
-    temporal_region_overlay, synthetic_compare_report,
+    analyze_temporal_offsets, compare_framebuffers_lockstep, menu_snow_demo_sequences,
+    synthetic_compare_report, temporal_offset_heatmap, temporal_region_overlay,
 };
 use lockstep::{GBA_H, GBA_PIXELS, GBA_W};
 
@@ -149,12 +149,34 @@ fn temporal_summary_reports_global_and_top_local_offsets() {
     assert_eq!(analysis.summary.global_best_offset, Some(2));
     assert!(analysis.summary.global_improvement > 0.0);
     assert_eq!(analysis.summary.region_count, analysis.regions.len());
+    assert!(analysis
+        .summary
+        .top_regions
+        .iter()
+        .any(|region| region.offset == 2 && region.x >= 120 && region.tile_count > 1));
+}
+
+#[test]
+fn menu_snow_demo_sequences_keep_menu_static_and_delay_particles() {
+    let (reference, candidate) = menu_snow_demo_sequences(18, 20, 2);
+
+    assert_eq!(reference[0][40 * GBA_W + 20], candidate[0][40 * GBA_W + 20]);
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    assert_eq!(analysis.summary.global_best_offset, Some(2));
+    assert!(analysis
+        .summary
+        .top_regions
+        .iter()
+        .any(|region| region.offset == 2 && region.x >= 120 && region.tile_count > 1));
     assert!(
         analysis
-            .summary
-            .top_regions
+            .tiles
             .iter()
-            .any(|region| region.offset == 2 && region.x >= 120 && region.tile_count > 1)
+            .filter(|tile| tile.x < 100 && tile.best_offset.is_none())
+            .count()
+            > 20
     );
 }
 

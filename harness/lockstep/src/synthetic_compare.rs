@@ -124,6 +124,37 @@ pub struct TemporalRegion {
     pub mean_confidence: f32,
 }
 
+pub fn menu_snow_demo_sequences(
+    reference_frames: usize,
+    candidate_frames: usize,
+    candidate_delay: isize,
+) -> (Vec<[u32; GBA_PIXELS]>, Vec<[u32; GBA_PIXELS]>) {
+    let reference = (0..reference_frames)
+        .map(|frame| menu_snow_demo_frame(frame as isize))
+        .collect();
+    let candidate = (0..candidate_frames)
+        .map(|frame| menu_snow_demo_frame(frame as isize - candidate_delay))
+        .collect();
+    (reference, candidate)
+}
+
+pub fn menu_snow_demo_frame(time: isize) -> [u32; GBA_PIXELS] {
+    let mut frame = [0xFF24_1810; GBA_PIXELS];
+
+    draw_rect(&mut frame, 12, 18, 84, 124, 0xFF38_3028);
+    draw_rect(&mut frame, 28, 36, 44, 10, 0xFFE8_E8_E8);
+    draw_rect(&mut frame, 28, 68, 58, 10, 0xFFE8_E8_E8);
+    draw_rect(&mut frame, 28, 100, 44, 10, 0xFFE8_E8_E8);
+
+    for i in 0..26 {
+        let x = 126 + (i as isize * 17 + time * 3).rem_euclid(102) as usize;
+        let y = 8 + (i as isize * 23 + time * (2 + (i % 3) as isize)).rem_euclid(134) as usize;
+        draw_rect(&mut frame, x, y, 3, 3, 0xFFFF_FFFF);
+    }
+
+    frame
+}
+
 pub fn synthetic_compare_report(
     result: &CompareResult,
     temporal_analysis: Option<&TemporalAnalysis>,
@@ -161,6 +192,21 @@ pub fn synthetic_compare_report(
     }
 }
 
+fn draw_rect(
+    frame: &mut [u32; GBA_PIXELS],
+    x: usize,
+    y: usize,
+    width: usize,
+    height: usize,
+    color: u32,
+) {
+    for py in y..(y + height).min(GBA_H) {
+        for px in x..(x + width).min(GBA_W) {
+            frame[py * GBA_W + px] = color;
+        }
+    }
+}
+
 pub fn analyze_temporal_offsets(
     reference: &[[u32; GBA_PIXELS]],
     candidate: &[[u32; GBA_PIXELS]],
@@ -180,7 +226,11 @@ pub fn analyze_temporal_offsets(
         }
     }
 
-    let regions = temporal_regions(&tiles, GBA_W / TEMPORAL_TILE_SIZE, GBA_H / TEMPORAL_TILE_SIZE);
+    let regions = temporal_regions(
+        &tiles,
+        GBA_W / TEMPORAL_TILE_SIZE,
+        GBA_H / TEMPORAL_TILE_SIZE,
+    );
     let summary = temporal_summary(&global, &regions);
 
     TemporalAnalysis {
@@ -305,7 +355,9 @@ fn temporal_regions(
         if visited[start] || !tile_is_region_candidate(&tiles[start]) {
             continue;
         }
-        let offset = tiles[start].best_offset.expect("region candidate has offset");
+        let offset = tiles[start]
+            .best_offset
+            .expect("region candidate has offset");
         let mut stack = vec![start];
         let mut members = Vec::new();
         visited[start] = true;
@@ -319,7 +371,8 @@ fn temporal_regions(
                 if visited[next] {
                     continue;
                 }
-                if tiles[next].best_offset == Some(offset) && tile_is_region_candidate(&tiles[next]) {
+                if tiles[next].best_offset == Some(offset) && tile_is_region_candidate(&tiles[next])
+                {
                     visited[next] = true;
                     stack.push(next);
                 }

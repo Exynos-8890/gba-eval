@@ -5,10 +5,21 @@ the same video metric used by the lockstep grader. It is meant for small
 controlled experiments where the inputs are images rather than emulator
 outputs.
 
+Generate a built-in demo with a static menu on the left and delayed
+moving particles on the right:
+
+```bash
+cargo run -p lockstep --bin synthetic_menu_snow_demo -- \
+  --out results/menu-snow-demo \
+  --frames 24 \
+  --candidate-frames 26 \
+  --delay 2
+```
+
 ```bash
 cargo run -p lockstep --bin synthetic_compare -- \
-  --reference /path/to/reference_frames \
-  --candidate /path/to/candidate_frames \
+  --reference results/menu-snow-demo/reference \
+  --candidate results/menu-snow-demo/candidate \
   --temporal-window 3 \
   --summary-only \
   --temporal-heatmap-out results/temporal-offset-heatmap.png \
