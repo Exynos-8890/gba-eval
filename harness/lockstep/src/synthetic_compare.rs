@@ -8,6 +8,7 @@ use crate::{
 const TEMPORAL_TILE_SIZE: usize = 10;
 const STATIC_MOTION_DEFECT: f32 = 0.001;
 const REGION_MIN_IMPROVEMENT: f32 = 0.001;
+const SUMMARY_TOP_REGION_COUNT: usize = 5;
 
 pub fn compare_framebuffers_lockstep(
     reference: &[[u32; GBA_PIXELS]],
@@ -60,12 +61,23 @@ pub fn compare_framebuffers_lockstep(
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct TemporalAnalysis {
     pub max_offset: i32,
+    pub summary: TemporalSummary,
     pub global: TemporalOffsetEstimate,
     pub tile_size: usize,
     pub tile_grid_width: usize,
     pub tile_grid_height: usize,
     pub regions: Vec<TemporalRegion>,
     pub tiles: Vec<TileTemporalOffset>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct TemporalSummary {
+    pub global_best_offset: Option<i32>,
+    pub global_lockstep_defect: f32,
+    pub global_best_defect: f32,
+    pub global_improvement: f32,
+    pub region_count: usize,
+    pub top_regions: Vec<TemporalRegion>,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -131,9 +143,11 @@ pub fn analyze_temporal_offsets(
     }
 
     let regions = temporal_regions(&tiles, GBA_W / TEMPORAL_TILE_SIZE, GBA_H / TEMPORAL_TILE_SIZE);
+    let summary = temporal_summary(&global, &regions);
 
     TemporalAnalysis {
         max_offset,
+        summary,
         global,
         tile_size: TEMPORAL_TILE_SIZE,
         tile_grid_width: GBA_W / TEMPORAL_TILE_SIZE,
@@ -166,6 +180,24 @@ pub fn temporal_region_overlay(
         draw_region_border(&mut frame, region, color);
     }
     frame
+}
+
+fn temporal_summary(
+    global: &TemporalOffsetEstimate,
+    regions: &[TemporalRegion],
+) -> TemporalSummary {
+    TemporalSummary {
+        global_best_offset: global.best_offset,
+        global_lockstep_defect: global.lockstep_defect,
+        global_best_defect: global.best_defect,
+        global_improvement: global.improvement,
+        region_count: regions.len(),
+        top_regions: regions
+            .iter()
+            .take(SUMMARY_TOP_REGION_COUNT)
+            .cloned()
+            .collect(),
+    }
 }
 
 fn draw_region_border(frame: &mut [u32; GBA_PIXELS], region: &TemporalRegion, color: u32) {

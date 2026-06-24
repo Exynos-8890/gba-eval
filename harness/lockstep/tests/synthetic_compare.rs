@@ -140,6 +140,25 @@ fn temporal_analysis_localizes_offset_to_moving_region() {
 }
 
 #[test]
+fn temporal_summary_reports_global_and_top_local_offsets() {
+    let reference: Vec<_> = (0..18).map(|t| menu_snow_scene(t)).collect();
+    let candidate: Vec<_> = (0..20).map(|t| menu_snow_scene(t - 2)).collect();
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    assert_eq!(analysis.summary.global_best_offset, Some(2));
+    assert!(analysis.summary.global_improvement > 0.0);
+    assert_eq!(analysis.summary.region_count, analysis.regions.len());
+    assert!(
+        analysis
+            .summary
+            .top_regions
+            .iter()
+            .any(|region| region.offset == 2 && region.x >= 120 && region.tile_count > 1)
+    );
+}
+
+#[test]
 fn temporal_heatmap_marks_static_and_shifted_regions_differently() {
     let reference: Vec<_> = (0..18).map(|t| menu_snow_scene(t)).collect();
     let candidate: Vec<_> = (0..20).map(|t| menu_snow_scene(t - 2)).collect();

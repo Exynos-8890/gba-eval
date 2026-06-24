@@ -23,6 +23,14 @@ The normal lockstep fields still describe strict frame-by-frame scoring:
 When `--temporal-window N` is provided, the output also includes
 `temporal_analysis`:
 
+- `summary.global_best_offset`: the shortest answer for "how many frames
+  is the candidate shifted by?".
+- `summary.global_improvement`: how much the whole-frame defect improves
+  after applying the best offset.
+- `summary.region_count`: how many local time-offset regions were found.
+- `summary.top_regions`: the largest local time-offset regions, useful
+  when a static menu is correct but moving particles, sprites, or other
+  visual elements are delayed.
 - `global.best_offset`: the frame offset in `[-N, N]` with the lowest
   whole-frame defect.
 - `global.offset_defects`: whole-frame defect at each tested offset.
