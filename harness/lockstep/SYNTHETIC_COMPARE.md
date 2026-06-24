@@ -53,6 +53,8 @@ list.
 Without `--summary-only`, `--temporal-window N` adds the full
 `temporal_analysis` object:
 
+- `summary.classification`: a compact verdict such as `matching`,
+  `global_time_shift`, `mixed_local_time_shifts`, or `visual_mismatch`.
 - `summary.global_best_offset`: the shortest answer for "how many frames
   is the candidate shifted by?".
 - `summary.global_improvement`: how much the whole-frame defect improves

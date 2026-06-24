@@ -75,6 +75,7 @@ pub struct TemporalAnalysis {
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct TemporalSummary {
+    pub classification: &'static str,
     pub global_best_offset: Option<i32>,
     pub global_lockstep_defect: f32,
     pub global_best_defect: f32,
@@ -332,7 +333,9 @@ fn temporal_summary(
     regions: &[TemporalRegion],
 ) -> TemporalSummary {
     let local_offsets = local_offset_summaries(regions);
+    let classification = temporal_classification(global, &local_offsets);
     TemporalSummary {
+        classification,
         global_best_offset: global.best_offset,
         global_lockstep_defect: global.lockstep_defect,
         global_best_defect: global.best_defect,
@@ -346,6 +349,27 @@ fn temporal_summary(
             .cloned()
             .collect(),
     }
+}
+
+fn temporal_classification(
+    global: &TemporalOffsetEstimate,
+    local_offsets: &[LocalOffsetSummary],
+) -> &'static str {
+    const MATCHING_DEFECT: f32 = 0.001;
+    const MEANINGFUL_IMPROVEMENT: f32 = 0.001;
+
+    if local_offsets.len() > 1 {
+        return "mixed_local_time_shifts";
+    }
+    if global.lockstep_defect <= MATCHING_DEFECT {
+        return "matching";
+    }
+    if global.improvement > MEANINGFUL_IMPROVEMENT
+        && global.best_offset.is_some_and(|offset| offset != 0)
+    {
+        return "global_time_shift";
+    }
+    "visual_mismatch"
 }
 
 fn local_offset_summaries(regions: &[TemporalRegion]) -> Vec<LocalOffsetSummary> {

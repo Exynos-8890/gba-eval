@@ -238,6 +238,34 @@ fn temporal_summary_marks_single_local_offset_as_not_mixed() {
 }
 
 #[test]
+fn temporal_summary_classifies_matching_sequences() {
+    let reference = vec![solid(0xFF2A_140C); 6];
+    let candidate = vec![solid(0xFF2A_140C); 6];
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    assert_eq!(analysis.summary.classification, "matching");
+}
+
+#[test]
+fn temporal_summary_classifies_single_time_shift() {
+    let (reference, candidate) = menu_snow_demo_sequences(18, 20, 2);
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    assert_eq!(analysis.summary.classification, "global_time_shift");
+}
+
+#[test]
+fn temporal_summary_classifies_mixed_local_time_shifts() {
+    let (reference, candidate) = mixed_timing_demo_sequences(24, 27, 2, -1);
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    assert_eq!(analysis.summary.classification, "mixed_local_time_shifts");
+}
+
+#[test]
 fn summary_report_keeps_temporal_conclusion_without_full_details() {
     let reference: Vec<_> = (0..18).map(|t| menu_snow_scene(t)).collect();
     let candidate: Vec<_> = (0..20).map(|t| menu_snow_scene(t - 2)).collect();
