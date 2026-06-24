@@ -139,17 +139,48 @@ pub fn menu_snow_demo_sequences(
 }
 
 pub fn menu_snow_demo_frame(time: isize) -> [u32; GBA_PIXELS] {
-    let mut frame = [0xFF24_1810; GBA_PIXELS];
-
-    draw_rect(&mut frame, 12, 18, 84, 124, 0xFF38_3028);
-    draw_rect(&mut frame, 28, 36, 44, 10, 0xFFE8_E8_E8);
-    draw_rect(&mut frame, 28, 68, 58, 10, 0xFFE8_E8_E8);
-    draw_rect(&mut frame, 28, 100, 44, 10, 0xFFE8_E8_E8);
+    let mut frame = menu_demo_background();
 
     for i in 0..26 {
         let x = 126 + (i as isize * 17 + time * 3).rem_euclid(102) as usize;
         let y = 8 + (i as isize * 23 + time * (2 + (i % 3) as isize)).rem_euclid(134) as usize;
         draw_rect(&mut frame, x, y, 3, 3, 0xFFFF_FFFF);
+    }
+
+    frame
+}
+
+pub fn mixed_timing_demo_sequences(
+    reference_frames: usize,
+    candidate_frames: usize,
+    top_delay: isize,
+    bottom_delay: isize,
+) -> (Vec<[u32; GBA_PIXELS]>, Vec<[u32; GBA_PIXELS]>) {
+    let reference = (0..reference_frames)
+        .map(|frame| mixed_timing_demo_frame(frame as isize, frame as isize))
+        .collect();
+    let candidate = (0..candidate_frames)
+        .map(|frame| {
+            mixed_timing_demo_frame(frame as isize - top_delay, frame as isize - bottom_delay)
+        })
+        .collect();
+    (reference, candidate)
+}
+
+pub fn mixed_timing_demo_frame(top_time: isize, bottom_time: isize) -> [u32; GBA_PIXELS] {
+    let mut frame = menu_demo_background();
+
+    for i in 0..18 {
+        let x = 124 + (i as isize * 23 + top_time * 4).rem_euclid(100) as usize;
+        let y = 8 + (i as isize * 13 + top_time * (2 + (i % 2) as isize)).rem_euclid(56) as usize;
+        draw_rect(&mut frame, x, y, 4, 4, 0xFFE8_F8FF);
+    }
+
+    for i in 0..18 {
+        let x = 124 + (i as isize * 19 + bottom_time * 5).rem_euclid(100) as usize;
+        let y =
+            94 + (i as isize * 11 + bottom_time * (3 + (i % 2) as isize)).rem_euclid(52) as usize;
+        draw_rect(&mut frame, x, y, 4, 4, 0xFFFF_B0D8);
     }
 
     frame
@@ -190,6 +221,15 @@ pub fn synthetic_compare_report(
             "temporal_summary": temporal_analysis.map(|analysis| &analysis.summary),
         })
     }
+}
+
+fn menu_demo_background() -> [u32; GBA_PIXELS] {
+    let mut frame = [0xFF24_1810; GBA_PIXELS];
+    draw_rect(&mut frame, 12, 18, 84, 124, 0xFF38_3028);
+    draw_rect(&mut frame, 28, 36, 44, 10, 0xFFE8_E8_E8);
+    draw_rect(&mut frame, 28, 68, 58, 10, 0xFFE8_E8_E8);
+    draw_rect(&mut frame, 28, 100, 44, 10, 0xFFE8_E8_E8);
+    frame
 }
 
 fn draw_rect(
