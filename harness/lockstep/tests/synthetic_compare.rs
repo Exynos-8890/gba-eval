@@ -124,6 +124,18 @@ fn temporal_analysis_localizes_offset_to_moving_region() {
         .filter(|tile| tile.x >= 120 && tile.best_offset == Some(2) && tile.improvement > 0.0)
         .count();
     assert!(shifted_snow_tiles > 0);
+
+    let shifted_regions = analysis
+        .regions
+        .iter()
+        .filter(|region| {
+            region.offset == 2
+                && region.x >= 120
+                && region.tile_count > 1
+                && region.mean_improvement > 0.0
+        })
+        .count();
+    assert!(shifted_regions > 0);
 }
 
 #[test]

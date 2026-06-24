@@ -7,6 +7,7 @@ use crate::{
 
 const TEMPORAL_TILE_SIZE: usize = 10;
 const STATIC_MOTION_DEFECT: f32 = 0.001;
+const REGION_MIN_IMPROVEMENT: f32 = 0.001;
 
 pub fn compare_framebuffers_lockstep(
     reference: &[[u32; GBA_PIXELS]],
@@ -63,6 +64,7 @@ pub struct TemporalAnalysis {
     pub tile_size: usize,
     pub tile_grid_width: usize,
     pub tile_grid_height: usize,
+    pub regions: Vec<TemporalRegion>,
     pub tiles: Vec<TileTemporalOffset>,
 }
 
@@ -96,6 +98,19 @@ pub struct TileTemporalOffset {
     pub confidence: f32,
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct TemporalRegion {
+    pub offset: i32,
+    pub x: usize,
+    pub y: usize,
+    pub width: usize,
+    pub height: usize,
+    pub tile_count: usize,
+    pub mean_motion_defect: f32,
+    pub mean_improvement: f32,
+    pub mean_confidence: f32,
+}
+
 pub fn analyze_temporal_offsets(
     reference: &[[u32; GBA_PIXELS]],
     candidate: &[[u32; GBA_PIXELS]],
@@ -115,12 +130,15 @@ pub fn analyze_temporal_offsets(
         }
     }
 
+    let regions = temporal_regions(&tiles, GBA_W / TEMPORAL_TILE_SIZE, GBA_H / TEMPORAL_TILE_SIZE);
+
     TemporalAnalysis {
         max_offset,
         global,
         tile_size: TEMPORAL_TILE_SIZE,
         tile_grid_width: GBA_W / TEMPORAL_TILE_SIZE,
         tile_grid_height: GBA_H / TEMPORAL_TILE_SIZE,
+        regions,
         tiles,
     }
 }
@@ -172,6 +190,122 @@ fn analyze_global_temporal_offset(
             defect
         })
     })
+}
+
+fn temporal_regions(
+    tiles: &[TileTemporalOffset],
+    grid_width: usize,
+    grid_height: usize,
+) -> Vec<TemporalRegion> {
+    let mut visited = vec![false; tiles.len()];
+    let mut regions = Vec::new();
+
+    for start in 0..tiles.len() {
+        if visited[start] || !tile_is_region_candidate(&tiles[start]) {
+            continue;
+        }
+        let offset = tiles[start].best_offset.expect("region candidate has offset");
+        let mut stack = vec![start];
+        let mut members = Vec::new();
+        visited[start] = true;
+
+        while let Some(index) = stack.pop() {
+            members.push(index);
+            let gx = index % grid_width;
+            let gy = index / grid_width;
+            for (nx, ny) in tile_neighbors(gx, gy, grid_width, grid_height) {
+                let next = ny * grid_width + nx;
+                if visited[next] {
+                    continue;
+                }
+                if tiles[next].best_offset == Some(offset) && tile_is_region_candidate(&tiles[next]) {
+                    visited[next] = true;
+                    stack.push(next);
+                }
+            }
+        }
+
+        regions.push(make_temporal_region(offset, tiles, &members));
+    }
+
+    regions.sort_by(|a, b| {
+        b.tile_count
+            .cmp(&a.tile_count)
+            .then_with(|| {
+                b.mean_improvement
+                    .partial_cmp(&a.mean_improvement)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
+            .then_with(|| a.y.cmp(&b.y))
+            .then_with(|| a.x.cmp(&b.x))
+    });
+    regions
+}
+
+fn tile_is_region_candidate(tile: &TileTemporalOffset) -> bool {
+    tile.best_offset.is_some()
+        && tile.motion_defect >= STATIC_MOTION_DEFECT
+        && tile.improvement >= REGION_MIN_IMPROVEMENT
+}
+
+fn tile_neighbors(
+    x: usize,
+    y: usize,
+    grid_width: usize,
+    grid_height: usize,
+) -> impl Iterator<Item = (usize, usize)> {
+    let mut out = Vec::with_capacity(4);
+    if x > 0 {
+        out.push((x - 1, y));
+    }
+    if x + 1 < grid_width {
+        out.push((x + 1, y));
+    }
+    if y > 0 {
+        out.push((x, y - 1));
+    }
+    if y + 1 < grid_height {
+        out.push((x, y + 1));
+    }
+    out.into_iter()
+}
+
+fn make_temporal_region(
+    offset: i32,
+    tiles: &[TileTemporalOffset],
+    members: &[usize],
+) -> TemporalRegion {
+    let mut min_x = usize::MAX;
+    let mut min_y = usize::MAX;
+    let mut max_x = 0usize;
+    let mut max_y = 0usize;
+    let mut motion = 0.0f32;
+    let mut improvement = 0.0f32;
+    let mut confidence = 0.0f32;
+
+    for &index in members {
+        let tile = &tiles[index];
+        min_x = min_x.min(tile.x);
+        min_y = min_y.min(tile.y);
+        max_x = max_x.max(tile.x + tile.width);
+        max_y = max_y.max(tile.y + tile.height);
+        motion += tile.motion_defect;
+        improvement += tile.improvement;
+        confidence += tile.confidence;
+    }
+
+    let n = members.len() as f32;
+    TemporalRegion {
+        offset,
+        x: min_x,
+        y: min_y,
+        width: max_x - min_x,
+        height: max_y - min_y,
+        tile_count: members.len(),
+        mean_motion_defect: motion / n,
+        mean_improvement: improvement / n,
+        mean_confidence: confidence / n,
+    }
 }
 
 fn analyze_tile_temporal_offset(
