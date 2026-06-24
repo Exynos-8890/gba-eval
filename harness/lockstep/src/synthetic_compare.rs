@@ -89,6 +89,7 @@ pub struct TemporalSummary {
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct LocalOffsetSummary {
     pub offset: i32,
+    pub location_label: &'static str,
     pub region_count: usize,
     pub tile_count: usize,
     pub x: usize,
@@ -412,6 +413,7 @@ fn local_offset_summary(offset: i32, regions: &[&TemporalRegion]) -> LocalOffset
     let denom = tile_count.max(1) as f32;
     LocalOffsetSummary {
         offset,
+        location_label: location_label(min_x, min_y, max_x - min_x, max_y - min_y),
         region_count: regions.len(),
         tile_count,
         x: min_x,
@@ -420,6 +422,39 @@ fn local_offset_summary(offset: i32, regions: &[&TemporalRegion]) -> LocalOffset
         height: max_y - min_y,
         mean_improvement: weighted_improvement / denom,
         mean_confidence: weighted_confidence / denom,
+    }
+}
+
+fn location_label(x: usize, y: usize, width: usize, height: usize) -> &'static str {
+    let center_x = x + width / 2;
+    let center_y = y + height / 2;
+
+    let horizontal = if center_x < GBA_W / 3 {
+        "left"
+    } else if center_x < (GBA_W * 2) / 3 {
+        "center"
+    } else {
+        "right"
+    };
+    let vertical = if center_y < GBA_H / 3 {
+        "top"
+    } else if center_y < (GBA_H * 2) / 3 {
+        "middle"
+    } else {
+        "bottom"
+    };
+
+    match (vertical, horizontal) {
+        ("top", "left") => "top_left",
+        ("top", "center") => "top_center",
+        ("top", "right") => "top_right",
+        ("middle", "left") => "middle_left",
+        ("middle", "center") => "middle_center",
+        ("middle", "right") => "middle_right",
+        ("bottom", "left") => "bottom_left",
+        ("bottom", "center") => "bottom_center",
+        ("bottom", "right") => "bottom_right",
+        _ => "middle_center",
     }
 }
 

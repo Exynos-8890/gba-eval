@@ -63,7 +63,8 @@ Without `--summary-only`, `--temporal-window N` adds the full
 - `summary.has_mixed_local_offsets`: whether the scene contains multiple
   distinct local offsets.
 - `summary.local_offsets`: local time-offset groups aggregated by offset,
-  including region count, tile count, bounding box, and mean confidence.
+  including coarse screen location, region count, tile count, bounding box,
+  and mean confidence.
 - `summary.top_regions`: the largest local time-offset regions, useful
   when a static menu is correct but moving particles, sprites, or other
   visual elements are delayed.

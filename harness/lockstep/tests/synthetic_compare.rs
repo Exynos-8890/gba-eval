@@ -225,6 +225,16 @@ fn temporal_summary_groups_local_regions_by_offset() {
         .local_offsets
         .iter()
         .all(|item| item.region_count > 0 && item.tile_count > 0));
+    assert!(analysis
+        .summary
+        .local_offsets
+        .iter()
+        .any(|item| item.offset == 2 && item.location_label == "top_right"));
+    assert!(analysis
+        .summary
+        .local_offsets
+        .iter()
+        .any(|item| item.offset == -1 && item.location_label == "bottom_right"));
     assert!(analysis.summary.has_mixed_local_offsets);
 }
 
