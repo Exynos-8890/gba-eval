@@ -10,6 +10,7 @@ cargo run -p lockstep --bin synthetic_compare -- \
   --reference /path/to/reference_frames \
   --candidate /path/to/candidate_frames \
   --temporal-window 3 \
+  --summary-only \
   --temporal-heatmap-out results/temporal-offset-heatmap.png \
   --temporal-region-overlay-out results/temporal-region-overlay.png
 ```
@@ -20,8 +21,13 @@ The normal lockstep fields still describe strict frame-by-frame scoring:
 - `histogram`: per-frame structural defects at offset 0.
 - `frame_diff_threshold`: the adaptive replay threshold.
 
-When `--temporal-window N` is provided, the output also includes
-`temporal_analysis`:
+Use `--summary-only` when you want a compact JSON result for experiments,
+logs, or a UI. It keeps the normal scores and top-level `temporal_summary`,
+but omits the full per-frame histogram, per-tile table, and complete region
+list.
+
+Without `--summary-only`, `--temporal-window N` adds the full
+`temporal_analysis` object:
 
 - `summary.global_best_offset`: the shortest answer for "how many frames
   is the candidate shifted by?".

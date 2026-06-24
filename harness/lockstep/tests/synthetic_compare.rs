@@ -1,6 +1,6 @@
 use lockstep::synthetic_compare::{
     analyze_temporal_offsets, compare_framebuffers_lockstep, temporal_offset_heatmap,
-    temporal_region_overlay,
+    temporal_region_overlay, synthetic_compare_report,
 };
 use lockstep::{GBA_H, GBA_PIXELS, GBA_W};
 
@@ -156,6 +156,24 @@ fn temporal_summary_reports_global_and_top_local_offsets() {
             .iter()
             .any(|region| region.offset == 2 && region.x >= 120 && region.tile_count > 1)
     );
+}
+
+#[test]
+fn summary_report_keeps_temporal_conclusion_without_full_details() {
+    let reference: Vec<_> = (0..18).map(|t| menu_snow_scene(t)).collect();
+    let candidate: Vec<_> = (0..20).map(|t| menu_snow_scene(t - 2)).collect();
+    let result = compare_framebuffers_lockstep(&reference, &candidate);
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    let report = synthetic_compare_report(&result, Some(&analysis), false);
+
+    assert!(report.get("video_score").is_some());
+    assert_eq!(report["temporal_summary"]["global_best_offset"], 2);
+    assert!(report["temporal_summary"]["top_regions"]
+        .as_array()
+        .is_some_and(|regions| !regions.is_empty()));
+    assert!(report.get("histogram").is_none());
+    assert!(report.get("temporal_analysis").is_none());
 }
 
 #[test]

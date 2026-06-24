@@ -4,6 +4,7 @@ use crate::{
     diff_frame, is_flat_frame, luma_mae, quant5, ref_in_motion, GBA_H, GBA_PIXELS, GBA_W,
     NOISE_FLOOR,
 };
+use serde_json::{json, Value};
 
 const TEMPORAL_TILE_SIZE: usize = 10;
 const STATIC_MOTION_DEFECT: f32 = 0.001;
@@ -121,6 +122,43 @@ pub struct TemporalRegion {
     pub mean_motion_defect: f32,
     pub mean_improvement: f32,
     pub mean_confidence: f32,
+}
+
+pub fn synthetic_compare_report(
+    result: &CompareResult,
+    temporal_analysis: Option<&TemporalAnalysis>,
+    include_details: bool,
+) -> Value {
+    if include_details {
+        json!({
+            "compared_frames": result.n_frames,
+            "frame_diff_threshold": result.frame_diff_threshold,
+            "video_score": result.video_score(),
+            "replay_score_deduped": result.replay_score_deduped,
+            "diverging_frames": result.diverging_frames,
+            "total_diff_pixels": result.total_diff_pixels,
+            "first_diverge_frame": result.first_diverge_frame,
+            "max_diff_pixels": result.max_diff_pixels,
+            "max_diff_frame": result.max_diff_frame,
+            "audit_luma_mae_mean": result.audit_luma_mae_mean(),
+            "histogram": result.histogram,
+            "temporal_analysis": temporal_analysis,
+        })
+    } else {
+        json!({
+            "compared_frames": result.n_frames,
+            "frame_diff_threshold": result.frame_diff_threshold,
+            "video_score": result.video_score(),
+            "replay_score_deduped": result.replay_score_deduped,
+            "diverging_frames": result.diverging_frames,
+            "total_diff_pixels": result.total_diff_pixels,
+            "first_diverge_frame": result.first_diverge_frame,
+            "max_diff_pixels": result.max_diff_pixels,
+            "max_diff_frame": result.max_diff_frame,
+            "audit_luma_mae_mean": result.audit_luma_mae_mean(),
+            "temporal_summary": temporal_analysis.map(|analysis| &analysis.summary),
+        })
+    }
 }
 
 pub fn analyze_temporal_offsets(

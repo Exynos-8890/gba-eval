@@ -4,10 +4,9 @@ use std::path::{Path, PathBuf};
 use lockstep::media::write_png;
 use lockstep::synthetic_compare::{
     analyze_temporal_offsets, compare_framebuffers_lockstep, temporal_offset_heatmap,
-    temporal_region_overlay,
+    temporal_region_overlay, synthetic_compare_report,
 };
 use lockstep::{GBA_H, GBA_PIXELS, GBA_W};
-use serde_json::json;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse()?;
@@ -26,20 +25,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!(
         "{}",
-        serde_json::to_string_pretty(&json!({
-            "compared_frames": result.n_frames,
-            "frame_diff_threshold": result.frame_diff_threshold,
-            "video_score": result.video_score(),
-            "replay_score_deduped": result.replay_score_deduped,
-            "diverging_frames": result.diverging_frames,
-            "total_diff_pixels": result.total_diff_pixels,
-            "first_diverge_frame": result.first_diverge_frame,
-            "max_diff_pixels": result.max_diff_pixels,
-            "max_diff_frame": result.max_diff_frame,
-            "audit_luma_mae_mean": result.audit_luma_mae_mean(),
-            "histogram": result.histogram,
-            "temporal_analysis": temporal_analysis,
-        }))?
+        serde_json::to_string_pretty(&synthetic_compare_report(
+            &result,
+            temporal_analysis.as_ref(),
+            !args.summary_only,
+        ))?
     );
     Ok(())
 }
@@ -50,6 +40,7 @@ struct Args {
     temporal_window: Option<i32>,
     temporal_heatmap_out: Option<PathBuf>,
     temporal_region_overlay_out: Option<PathBuf>,
+    summary_only: bool,
 }
 
 impl Args {
@@ -59,6 +50,7 @@ impl Args {
         let mut temporal_window = None;
         let mut temporal_heatmap_out = None;
         let mut temporal_region_overlay_out = None;
+        let mut summary_only = false;
         let mut args = std::env::args().skip(1);
 
         while let Some(arg) = args.next() {
@@ -79,6 +71,7 @@ impl Args {
                 "--temporal-region-overlay-out" => {
                     temporal_region_overlay_out = args.next().map(PathBuf::from)
                 }
+                "--summary-only" => summary_only = true,
                 "--help" | "-h" => {
                     print_usage();
                     std::process::exit(0);
@@ -92,6 +85,9 @@ impl Args {
         {
             return Err("temporal image outputs require --temporal-window".into());
         }
+        if summary_only && temporal_window.is_none() {
+            return Err("--summary-only requires --temporal-window".into());
+        }
 
         match (reference, candidate) {
             (Some(reference), Some(candidate)) => Ok(Self {
@@ -100,6 +96,7 @@ impl Args {
                 temporal_window,
                 temporal_heatmap_out,
                 temporal_region_overlay_out,
+                summary_only,
             }),
             _ => {
                 print_usage();
@@ -111,7 +108,7 @@ impl Args {
 
 fn print_usage() {
     eprintln!(
-        "usage: synthetic_compare --reference ref_png_dir --candidate candidate_png_dir [--temporal-window N] [--temporal-heatmap-out out.png] [--temporal-region-overlay-out out.png]"
+        "usage: synthetic_compare --reference ref_png_dir --candidate candidate_png_dir [--temporal-window N] [--summary-only] [--temporal-heatmap-out out.png] [--temporal-region-overlay-out out.png]"
     );
 }
 
