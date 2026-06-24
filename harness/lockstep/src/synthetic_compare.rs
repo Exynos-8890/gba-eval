@@ -4,6 +4,8 @@ use crate::{
     diff_frame, is_flat_frame, luma_mae, quant5, ref_in_motion, GBA_H, GBA_PIXELS, GBA_W,
     NOISE_FLOOR,
 };
+use std::collections::BTreeMap;
+
 use serde_json::{json, Value};
 
 const TEMPORAL_TILE_SIZE: usize = 10;
@@ -78,7 +80,21 @@ pub struct TemporalSummary {
     pub global_best_defect: f32,
     pub global_improvement: f32,
     pub region_count: usize,
+    pub local_offsets: Vec<LocalOffsetSummary>,
     pub top_regions: Vec<TemporalRegion>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct LocalOffsetSummary {
+    pub offset: i32,
+    pub region_count: usize,
+    pub tile_count: usize,
+    pub x: usize,
+    pub y: usize,
+    pub width: usize,
+    pub height: usize,
+    pub mean_improvement: f32,
+    pub mean_confidence: f32,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -320,11 +336,63 @@ fn temporal_summary(
         global_best_defect: global.best_defect,
         global_improvement: global.improvement,
         region_count: regions.len(),
+        local_offsets: local_offset_summaries(regions),
         top_regions: regions
             .iter()
             .take(SUMMARY_TOP_REGION_COUNT)
             .cloned()
             .collect(),
+    }
+}
+
+fn local_offset_summaries(regions: &[TemporalRegion]) -> Vec<LocalOffsetSummary> {
+    let mut groups = BTreeMap::<i32, Vec<&TemporalRegion>>::new();
+    for region in regions {
+        groups.entry(region.offset).or_default().push(region);
+    }
+
+    let mut summaries = groups
+        .into_iter()
+        .map(|(offset, regions)| local_offset_summary(offset, &regions))
+        .collect::<Vec<_>>();
+    summaries.sort_by(|a, b| {
+        b.tile_count
+            .cmp(&a.tile_count)
+            .then_with(|| a.offset.cmp(&b.offset))
+    });
+    summaries
+}
+
+fn local_offset_summary(offset: i32, regions: &[&TemporalRegion]) -> LocalOffsetSummary {
+    let mut min_x = usize::MAX;
+    let mut min_y = usize::MAX;
+    let mut max_x = 0usize;
+    let mut max_y = 0usize;
+    let mut tile_count = 0usize;
+    let mut weighted_improvement = 0.0f32;
+    let mut weighted_confidence = 0.0f32;
+
+    for region in regions {
+        min_x = min_x.min(region.x);
+        min_y = min_y.min(region.y);
+        max_x = max_x.max(region.x + region.width);
+        max_y = max_y.max(region.y + region.height);
+        tile_count += region.tile_count;
+        weighted_improvement += region.mean_improvement * region.tile_count as f32;
+        weighted_confidence += region.mean_confidence * region.tile_count as f32;
+    }
+
+    let denom = tile_count.max(1) as f32;
+    LocalOffsetSummary {
+        offset,
+        region_count: regions.len(),
+        tile_count,
+        x: min_x,
+        y: min_y,
+        width: max_x - min_x,
+        height: max_y - min_y,
+        mean_improvement: weighted_improvement / denom,
+        mean_confidence: weighted_confidence / denom,
     }
 }
 

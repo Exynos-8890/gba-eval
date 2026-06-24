@@ -206,6 +206,28 @@ fn mixed_timing_demo_reports_multiple_local_offsets() {
 }
 
 #[test]
+fn temporal_summary_groups_local_regions_by_offset() {
+    let (reference, candidate) = mixed_timing_demo_sequences(24, 27, 2, -1);
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 3);
+
+    let offsets = analysis
+        .summary
+        .local_offsets
+        .iter()
+        .map(|item| item.offset)
+        .collect::<Vec<_>>();
+
+    assert!(offsets.contains(&-1));
+    assert!(offsets.contains(&2));
+    assert!(analysis
+        .summary
+        .local_offsets
+        .iter()
+        .all(|item| item.region_count > 0 && item.tile_count > 0));
+}
+
+#[test]
 fn summary_report_keeps_temporal_conclusion_without_full_details() {
     let reference: Vec<_> = (0..18).map(|t| menu_snow_scene(t)).collect();
     let candidate: Vec<_> = (0..20).map(|t| menu_snow_scene(t - 2)).collect();
