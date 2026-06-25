@@ -176,18 +176,26 @@ pub fn mixed_timing_demo_sequences(
     bottom_delay: isize,
 ) -> (Vec<[u32; GBA_PIXELS]>, Vec<[u32; GBA_PIXELS]>) {
     let reference = (0..reference_frames)
-        .map(|frame| mixed_timing_demo_frame(frame as isize, frame as isize))
+        .map(|frame| mixed_timing_demo_frame(frame as isize, frame as isize, frame as isize))
         .collect();
     let candidate = (0..candidate_frames)
         .map(|frame| {
-            mixed_timing_demo_frame(frame as isize - top_delay, frame as isize - bottom_delay)
+            mixed_timing_demo_frame(
+                frame as isize,
+                frame as isize - top_delay,
+                frame as isize - bottom_delay,
+            )
         })
         .collect();
     (reference, candidate)
 }
 
-pub fn mixed_timing_demo_frame(top_time: isize, bottom_time: isize) -> [u32; GBA_PIXELS] {
-    let mut frame = menu_demo_background();
+pub fn mixed_timing_demo_frame(
+    background_time: isize,
+    top_time: isize,
+    bottom_time: isize,
+) -> [u32; GBA_PIXELS] {
+    let mut frame = diagonal_demo_background(background_time);
 
     for i in 0..18 {
         let x = 124 + (i as isize * 23 + top_time * 4).rem_euclid(100) as usize;
@@ -248,6 +256,27 @@ fn menu_demo_background() -> [u32; GBA_PIXELS] {
     draw_rect(&mut frame, 28, 36, 44, 10, 0xFFE8_E8_E8);
     draw_rect(&mut frame, 28, 68, 58, 10, 0xFFE8_E8_E8);
     draw_rect(&mut frame, 28, 100, 44, 10, 0xFFE8_E8_E8);
+    frame
+}
+
+fn diagonal_demo_background(time: isize) -> [u32; GBA_PIXELS] {
+    let mut frame = [0xFF12_1820; GBA_PIXELS];
+    let drift = time.div_euclid(2);
+
+    for y in 0..GBA_H {
+        for x in 0..GBA_W {
+            let diagonal = (x as isize + y as isize + drift).rem_euclid(48);
+            let color = if diagonal < 2 {
+                0xFF32_4450
+            } else if diagonal < 4 {
+                0xFF22_303A
+            } else {
+                0xFF12_1820
+            };
+            frame[y * GBA_W + x] = color;
+        }
+    }
+
     frame
 }
 

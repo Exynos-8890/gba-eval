@@ -39,9 +39,9 @@ impl Args {
     fn parse() -> Result<Self, Box<dyn std::error::Error>> {
         let mut out = None;
         let mut reference_frames = 24usize;
-        let mut candidate_frames = 27usize;
-        let mut top_delay = 2isize;
-        let mut bottom_delay = -1isize;
+        let mut candidate_frames = 30usize;
+        let mut top_delay = 5isize;
+        let mut bottom_delay = -4isize;
         let mut args = std::env::args().skip(1);
 
         while let Some(arg) = args.next() {
@@ -99,6 +99,6 @@ impl Args {
 
 fn print_usage() {
     eprintln!(
-        "usage: synthetic_mixed_timing_demo --out out_dir [--frames 24] [--candidate-frames 27] [--top-delay 2] [--bottom-delay -1]"
+        "usage: synthetic_mixed_timing_demo --out out_dir [--frames 24] [--candidate-frames 30] [--top-delay 5] [--bottom-delay -4]"
     );
 }

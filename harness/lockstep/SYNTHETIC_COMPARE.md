@@ -16,24 +16,25 @@ cargo run -p lockstep --bin synthetic_menu_snow_demo -- \
   --delay 2
 ```
 
-Generate a stronger demo where two moving areas have different local
-timing errors: the top-right particles are delayed by 2 frames and the
-bottom-right particles are advanced by 1 frame.
+Generate a stronger demo on a synchronized moving diagonal-line background
+where two moving areas have different local timing errors: the top-right
+particles are delayed by 5 frames and the bottom-right particles are
+advanced by 4 frames.
 
 ```bash
 cargo run -p lockstep --bin synthetic_mixed_timing_demo -- \
   --out results/mixed-timing-demo \
   --frames 24 \
-  --candidate-frames 27 \
-  --top-delay 2 \
-  --bottom-delay -1
+  --candidate-frames 30 \
+  --top-delay 5 \
+  --bottom-delay -4
 ```
 
 ```bash
 cargo run -p lockstep --bin synthetic_compare -- \
   --reference results/mixed-timing-demo/reference \
   --candidate results/mixed-timing-demo/candidate \
-  --temporal-window 3 \
+  --temporal-window 5 \
   --summary-only \
   --temporal-heatmap-out results/temporal-offset-heatmap.png \
   --temporal-region-overlay-out results/temporal-region-overlay.png

@@ -1,0 +1,20 @@
+{
+  "source": "https://gbaeval.com/results/leaderboard.json",
+  "downloaded_at": "2026-06-25",
+  "candidates": [
+    { "id": "claude-fable-5", "label": "Claude Fable 5", "rank": 1, "overall": 0.7447198828312318, "bytes": 134001 },
+    { "id": "claude-opus-4-8", "label": "Claude Opus 4.8", "rank": 2, "overall": 0.7090450062635527, "bytes": 99028 },
+    { "id": "gpt-5-5", "label": "GPT-5.5", "rank": 3, "overall": 0.5322037178151383, "bytes": 174383 },
+    { "id": "claude-sonnet", "label": "Claude Sonnet", "rank": 4, "overall": 0.48756634832044743, "bytes": 84787 },
+    { "id": "claude-opus-4-6", "label": "Claude Opus 4.6", "rank": 5, "overall": 0.4411559216788414, "bytes": 73618 },
+    { "id": "claude-opus", "label": "Claude Opus", "rank": 6, "overall": 0.43811361876085897, "bytes": 85657 },
+    { "id": "gpt-5-4", "label": "GPT-5.4", "rank": 7, "overall": 0.3160372478663838, "bytes": 87838 },
+    { "id": "goose-gemini-3-5-flash", "label": "Goose Gemini 3.5 Flash", "rank": 8, "overall": 0.06701366402557543, "bytes": 380773 },
+    { "id": "grok", "label": "Grok", "rank": 9, "overall": 0.02381253535884411, "bytes": 682835 },
+    { "id": "goose-minimax-m3", "label": "Goose MiniMax M3", "rank": 10, "overall": 0.009136320401503086, "bytes": 64816 },
+    { "id": "goose-kimi-k2-6", "label": "Goose Kimi K2 6", "rank": 11, "overall": 0.008624932115315736, "bytes": 68730 },
+    { "id": "goose-kimi-k2-7", "label": "Goose Kimi K2 7", "rank": 12, "overall": 0.008526563108968812, "bytes": 89912 },
+    { "id": "gemini-pro", "label": "Gemini Pro", "rank": 13, "overall": 0.008002192461655575, "bytes": 20858 },
+    { "id": "goose-qwen3-7-max", "label": "Goose Qwen3 7 Max", "rank": 14, "overall": 0.004215022870813146, "bytes": 70580 }
+  ]
+}

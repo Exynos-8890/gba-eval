@@ -1,7 +1,7 @@
 use lockstep::synthetic_compare::{
     analyze_temporal_offsets, compare_framebuffers_lockstep, menu_snow_demo_sequences,
-    mixed_timing_demo_sequences, synthetic_compare_report, temporal_offset_heatmap,
-    temporal_region_overlay,
+    mixed_timing_demo_frame, mixed_timing_demo_sequences, synthetic_compare_report,
+    temporal_offset_heatmap, temporal_region_overlay,
 };
 use lockstep::{GBA_H, GBA_PIXELS, GBA_W};
 
@@ -195,14 +195,49 @@ fn mixed_timing_demo_reports_multiple_local_offsets() {
         .regions
         .iter()
         .any(|region| region.offset == -1 && region.x >= 120 && region.y >= 80));
-    assert!(
-        analysis
-            .tiles
-            .iter()
-            .filter(|tile| tile.x < 100 && tile.best_offset.is_none())
-            .count()
-            > 20
-    );
+}
+
+#[test]
+fn mixed_timing_demo_supports_wide_search_on_grid_background() {
+    let (reference, candidate) = mixed_timing_demo_sequences(24, 30, 5, -4);
+
+    let analysis = analyze_temporal_offsets(&reference, &candidate, 5);
+
+    assert_eq!(analysis.max_offset, 5);
+    assert!(analysis
+        .regions
+        .iter()
+        .any(|region| region.offset == 5 && region.x >= 120 && region.y < 80));
+    assert!(analysis
+        .regions
+        .iter()
+        .any(|region| region.offset == -4 && region.x >= 120 && region.y >= 80));
+    assert!(analysis
+        .summary
+        .local_offsets
+        .iter()
+        .any(|item| item.offset == 5 && item.location_label == "top_right"));
+    assert!(analysis
+        .summary
+        .local_offsets
+        .iter()
+        .any(|item| item.offset == -4 && item.location_label == "bottom_right"));
+}
+
+#[test]
+fn mixed_timing_demo_uses_synchronized_moving_diagonal_background() {
+    let (reference, candidate) = mixed_timing_demo_sequences(24, 30, 5, -4);
+    let early_frame = mixed_timing_demo_frame(0, 0, 0);
+    let later_frame = mixed_timing_demo_frame(8, 8, 8);
+
+    assert_ne!(early_frame[40 * GBA_W + 20], 0xFF38_3028);
+    assert_ne!(early_frame[40 * GBA_W + 20], 0xFFE8_E8_E8);
+    assert_eq!(reference[8][20 * GBA_W + 20], candidate[8][20 * GBA_W + 20]);
+    let changed_background_pixels = (0..80)
+        .flat_map(|y| (0..100).map(move |x| (x, y)))
+        .filter(|&(x, y)| early_frame[y * GBA_W + x] != later_frame[y * GBA_W + x])
+        .count();
+    assert!(changed_background_pixels > 100);
 }
 
 #[test]
