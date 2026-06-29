@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Version 6 Comparator</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Version 6 Comparator</h1>
+          <p>Synchronized moving background, delayed top_right particles, advanced bottom_right particles.</p>
+        </div>
+        <div class="verdict">
+          <span class="dot"></span>
+          <span>mixed_local_time_shifts</span>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="frame comparison">
+        <article class="panel">
+          <div class="panel-title">
+            <span>Reference</span>
+            <span class="frame-index" id="refIndex">frame_0000.png</span>
+          </div>
+          <div class="viewport">
+            <img class="gba" id="refFrame" alt="Reference frame" />
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <span>Time Offset Diff</span>
+            <span class="frame-index">t+0 vs aligned</span>
+          </div>
+          <div class="diff-stack">
+            <div class="diff-card">
+              <div class="mini-title">Lockstep t+0</div>
+              <canvas class="mini-canvas" id="currentDiffCanvas" width="240" height="160" aria-label="Lockstep difference"></canvas>
+            </div>
+            <div class="diff-card">
+              <div class="mini-title">Offset-corrected diff</div>
+              <canvas class="mini-canvas" id="alignedDiffCanvas" width="240" height="160" aria-label="Offset-corrected difference"></canvas>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <span>Candidate</span>
+            <span class="frame-index" id="candIndex">frame_0000.png</span>
+          </div>
+          <div class="viewport">
+            <img class="gba" id="candFrame" alt="Candidate frame" />
+          </div>
+        </article>
+      </section>
+
+      <section class="controls" aria-label="timeline controls">
+        <button id="playPause" type="button" aria-label="Play or pause">Play</button>
+        <input id="frameSlider" type="range" min="0" max="23" value="0" step="1" aria-label="Frame" />
+        <div class="readout" id="frameReadout">0 / 23</div>
+      </section>
+
+      <section class="summary" aria-label="temporal summary">
+        <div class="fact">
+          <strong>Classification</strong>
+          <div class="value green">mixed_local_time_shifts</div>
+        </div>
+        <div class="fact">
+          <strong>top_right</strong>
+          <div class="value blue" id="topOffsetSummary">not searched</div>
+        </div>
+        <div class="fact">
+          <strong>bottom_right</strong>
+          <div class="value red" id="bottomOffsetSummary">not searched</div>
+        </div>
+      </section>
+
+      <section class="panel search-evidence" aria-label="offset search evidence">
+        <div class="panel-title">
+          <span>Offset Search Evidence</span>
+          <span class="frame-index">best offset from lowest error</span>
+        </div>
+        <div class="search-body">
+          <div class="search-toolbar">
+            <button class="search-button" id="runSearchButton" type="button">Run search</button>
+            <div class="search-status" id="searchStatus">No boxes are shown before search</div>
+          </div>
+          <div class="search-grid" id="offsetSearchPanel">
+            <div class="search-card">Search not started</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

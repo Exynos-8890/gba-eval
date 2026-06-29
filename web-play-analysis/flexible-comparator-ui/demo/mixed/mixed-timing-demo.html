@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mixed Timing Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101218;
+      --panel: #191d26;
+      --panel-2: #222837;
+      --line: #343b4c;
+      --text: #edf1f7;
+      --muted: #98a2b3;
+      --blue: #4d7cff;
+      --red: #ff5a4f;
+      --green: #5bd27b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 720;
+      letter-spacing: 0;
+    }
+
+    .verdict {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--blue), var(--red));
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 42px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .frame-index {
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .viewport {
+      display: grid;
+      place-items: center;
+      min-height: 390px;
+      padding: 18px;
+      background: #0b0d12;
+    }
+
+    .gba {
+      width: min(100%, 480px);
+      aspect-ratio: 3 / 2;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      object-fit: contain;
+      background: #000;
+      border: 1px solid #000;
+    }
+
+    .compare-stack {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      min-height: 390px;
+      background: #0b0d12;
+    }
+
+    .single-compare {
+      grid-template-rows: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+
+    .diff-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .diff-card {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .mini-title {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mini-img,
+    .mini-canvas {
+      width: 100%;
+      max-width: 430px;
+      aspect-ratio: 3 / 2;
+      justify-self: center;
+      image-rendering: pixelated;
+      object-fit: contain;
+      border: 1px solid #000;
+      background: #000;
+    }
+
+    .diff-grid .mini-canvas {
+      max-width: none;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+    }
+
+    button {
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .search-button {
+      width: auto;
+      min-width: 112px;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    button:hover {
+      border-color: #5b657a;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .readout {
+      min-width: 96px;
+      text-align: right;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .fact {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 14px;
+      min-height: 116px;
+    }
+
+    .fact strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .fact .value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 18px;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .search-evidence {
+      margin-top: 14px;
+    }
+
+    .search-body {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+      background: #0b0d12;
+    }
+
+    .search-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .search-status {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .search-card {
+      min-width: 0;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .search-card-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .search-bars {
+      display: grid;
+      grid-template-columns: repeat(11, minmax(0, 1fr));
+      gap: 6px;
+      align-items: end;
+      height: 128px;
+    }
+
+    .search-bar {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      align-items: end;
+      gap: 6px;
+      min-width: 0;
+      height: 100%;
+    }
+
+    .search-bar-fill {
+      width: 100%;
+      min-height: 6px;
+      border: 1px solid #4a5163;
+      border-radius: 4px 4px 2px 2px;
+      background: #3a4150;
+    }
+
+    .search-bar.is-best .search-bar-fill {
+      border-color: currentColor;
+      background: currentColor;
+    }
+
+    .search-bar-label {
+      text-align: center;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .search-bar.is-best .search-bar-label {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .blue {
+      color: #86a6ff;
+    }
+
+    .red {
+      color: #ff9a91;
+    }
+
+    .green {
+      color: #8fe5a5;
+    }
+
+    @media (max-width: 1040px) {
+      .stage,
+      .summary,
+      .search-grid {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .viewport,
+      .compare-stack {
+        min-height: auto;
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>Mixed Timing Demo</h1>
+      <div class="verdict"><span class="dot"></span><span>mixed_local_time_shifts</span></div>
+    </header>
+
+    <section class="stage" aria-label="frame comparison">
+      <article class="panel">
+        <div class="panel-title">
+          <span>Reference</span>
+          <span class="frame-index" id="refIndex">frame_0000.png</span>
+        </div>
+        <div class="viewport">
+          <img class="gba" id="refFrame" alt="Reference frame" src="reference/frame_0000.png" />
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-title">
+          <span>Time Offset Diff</span>
+          <span class="frame-index">t+0 vs aligned</span>
+        </div>
+        <div class="compare-stack single-compare">
+          <div class="diff-grid" aria-label="time offset difference comparison">
+            <div class="diff-card">
+              <div class="mini-title">Lockstep t+0</div>
+              <canvas class="mini-canvas" id="currentDiffCanvas" width="240" height="160" aria-label="Current frame difference with temporal offset markers"></canvas>
+            </div>
+            <div class="diff-card">
+              <div class="mini-title">Offset-corrected diff</div>
+              <canvas class="mini-canvas" id="alignedDiffCanvas" width="240" height="160" aria-label="Offset-corrected difference using detected temporal shifts"></canvas>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-title">
+          <span>Candidate</span>
+          <span class="frame-index" id="candIndex">frame_0000.png</span>
+        </div>
+        <div class="viewport">
+          <img class="gba" id="candFrame" alt="Candidate frame" src="candidate/frame_0000.png" />
+        </div>
+      </article>
+    </section>
+
+    <section class="controls" aria-label="timeline controls">
+      <button id="playPause" type="button" aria-label="Play or pause">▶</button>
+      <input id="frameSlider" type="range" min="0" max="23" value="0" step="1" aria-label="Frame" />
+      <div class="readout" id="frameReadout">0 / 23</div>
+    </section>
+
+    <section class="summary" aria-label="temporal summary">
+      <div class="fact">
+        <strong>Classification</strong>
+        <div class="value green">mixed_local_time_shifts</div>
+      </div>
+      <div class="fact">
+        <strong>top_right</strong>
+        <div class="value blue" id="topOffsetSummary">not searched</div>
+      </div>
+      <div class="fact">
+        <strong>bottom_right</strong>
+        <div class="value red" id="bottomOffsetSummary">not searched</div>
+      </div>
+    </section>
+
+    <section class="panel search-evidence" aria-label="offset search evidence">
+      <div class="panel-title">
+        <span>Offset Search Evidence</span>
+        <span class="frame-index">best offset from lowest error</span>
+      </div>
+      <div class="search-body">
+        <div class="search-toolbar">
+          <button class="search-button" id="runSearchButton" type="button">Run search</button>
+          <div class="search-status" id="searchStatus">No boxes are shown before search</div>
+        </div>
+        <div class="search-grid" id="offsetSearchPanel">
+          <div class="search-card">Search not started</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script id="detectedRegionData" type="application/json">
+    {
+      "classification": "mixed_local_time_shifts",
+      "local_offsets": [
+        {
+          "offset": -4,
+          "location_label": "bottom_right",
+          "region_count": 4,
+          "tile_count": 38,
+          "x": 120,
+          "y": 90,
+          "width": 110,
+          "height": 60,
+          "mean_improvement": 0.07999780029058456,
+          "mean_confidence": 0.06641027331352234
+        },
+        {
+          "offset": 5,
+          "location_label": "top_right",
+          "region_count": 5,
+          "tile_count": 26,
+          "x": 120,
+          "y": 0,
+          "width": 110,
+          "height": 70,
+          "mean_improvement": 0.10883013159036636,
+          "mean_confidence": 0.04400182515382767
+        },
+        {
+          "offset": 1,
+          "location_label": "middle_right",
+          "region_count": 2,
+          "tile_count": 3,
+          "x": 180,
+          "y": 40,
+          "width": 50,
+          "height": 30,
+          "mean_improvement": 0.05472220852971077,
+          "mean_confidence": 0.02724035270512104
+        }
+      ]
+    }
+  </script>
+
+  <script>
+    const frameCount = 24;
+    const candidateFrameCount = 30;
+    const frameSlider = document.getElementById("frameSlider");
+    const playPause = document.getElementById("playPause");
+    const refFrame = document.getElementById("refFrame");
+    const candFrame = document.getElementById("candFrame");
+    const currentDiffCanvas = document.getElementById("currentDiffCanvas");
+    const currentDiffContext = currentDiffCanvas.getContext("2d", { willReadFrequently: true });
+    const alignedDiffCanvas = document.getElementById("alignedDiffCanvas");
+    const alignedDiffContext = alignedDiffCanvas.getContext("2d", { willReadFrequently: true });
+    const refScratch = document.createElement("canvas");
+    const candScratch = document.createElement("canvas");
+    const offsetScratch = document.createElement("canvas");
+    refScratch.width = candScratch.width = offsetScratch.width = 240;
+    refScratch.height = candScratch.height = offsetScratch.height = 160;
+    const refScratchContext = refScratch.getContext("2d", { willReadFrequently: true });
+    const candScratchContext = candScratch.getContext("2d", { willReadFrequently: true });
+    const offsetScratchContext = offsetScratch.getContext("2d", { willReadFrequently: true });
+    const refIndex = document.getElementById("refIndex");
+    const candIndex = document.getElementById("candIndex");
+    const frameReadout = document.getElementById("frameReadout");
+    const runSearchButton = document.getElementById("runSearchButton");
+    const searchStatus = document.getElementById("searchStatus");
+    const offsetSearchPanel = document.getElementById("offsetSearchPanel");
+    const topOffsetSummary = document.getElementById("topOffsetSummary");
+    const bottomOffsetSummary = document.getElementById("bottomOffsetSummary");
+
+    const detectedRegionData = JSON.parse(document.getElementById("detectedRegionData").textContent);
+    const detectedRegions = detectedRegionData.local_offsets.map((region) => ({
+      name: region.location_label,
+      offset: region.offset,
+      color: offsetColor(region.offset),
+      x: region.x,
+      y: region.y,
+      width: region.width,
+      height: region.height,
+    })).sort((a, b) => a.y - b.y || a.x - b.x);
+    const offsetRegions = detectedRegions;
+    const candidateFrameCache = new Map();
+    const referenceFrameCache = new Map();
+
+    let frame = 0;
+    let playing = false;
+    let timer = null;
+    let searchHasRun = false;
+
+    function frameName(index) {
+      return `frame_${String(index).padStart(4, "0")}.png`;
+    }
+
+    function render(nextFrame) {
+      frame = ((nextFrame % frameCount) + frameCount) % frameCount;
+      const candidateFrame = frame % candidateFrameCount;
+      const refName = frameName(frame);
+      const candName = frameName(candidateFrame);
+
+      refFrame.src = `reference/${refName}`;
+      candFrame.src = `candidate/${candName}`;
+      refIndex.textContent = refName;
+      candIndex.textContent = candName;
+      for (const region of offsetRegions) {
+        loadCandidateFrame(matchFrame(region.offset));
+      }
+      frameSlider.value = String(frame);
+      frameReadout.textContent = `${frame} / ${frameCount - 1}`;
+      drawCurrentDiff();
+      drawAlignedDiff();
+    }
+
+    function matchFrame(offset) {
+      return ((frame + offset) % candidateFrameCount + candidateFrameCount) % candidateFrameCount;
+    }
+
+    function loadCandidateFrame(index) {
+      const name = frameName(index);
+      if (candidateFrameCache.has(name)) {
+        return candidateFrameCache.get(name);
+      }
+
+      const image = new Image();
+      image.addEventListener("load", drawAlignedDiff);
+      image.src = `candidate/${name}`;
+      candidateFrameCache.set(name, image);
+      return image;
+    }
+
+    function loadReferenceFrame(index) {
+      const name = frameName(index);
+      if (referenceFrameCache.has(name)) {
+        return referenceFrameCache.get(name);
+      }
+
+      const image = new Image();
+      image.src = `reference/${name}`;
+      referenceFrameCache.set(name, image);
+      return image;
+    }
+
+    function imageReady(image) {
+      if (image.complete && image.naturalWidth) {
+        return Promise.resolve(image);
+      }
+
+      return new Promise((resolve, reject) => {
+        image.addEventListener("load", () => resolve(image), { once: true });
+        image.addEventListener("error", reject, { once: true });
+      });
+    }
+
+    function offsetColor(offset) {
+      return offset >= 0 ? "#4d7cff" : "#ff5a4f";
+    }
+
+    function drawCurrentDiff() {
+      if (!refFrame.complete || !candFrame.complete || !refFrame.naturalWidth || !candFrame.naturalWidth) {
+        return;
+      }
+
+      const refPixels = readFramePixels(refFrame, refScratchContext);
+      const candPixels = readFramePixels(candFrame, candScratchContext);
+      drawDiffPixels(currentDiffContext, refPixels, candPixels);
+      if (searchHasRun) {
+        drawOffsetGuide(currentDiffContext, "t+0");
+      }
+    }
+
+    function drawAlignedDiff() {
+      if (!refFrame.complete || !candFrame.complete || !refFrame.naturalWidth || !candFrame.naturalWidth) {
+        return;
+      }
+
+      const refPixels = readFramePixels(refFrame, refScratchContext);
+      const alignedCandidatePixels = readFramePixels(candFrame, candScratchContext);
+
+      if (searchHasRun) {
+        for (const region of offsetRegions) {
+          const offsetFrame = loadCandidateFrame(matchFrame(region.offset));
+          if (!offsetFrame.complete || !offsetFrame.naturalWidth) {
+            return;
+          }
+
+          const offsetPixels = readFramePixels(offsetFrame, offsetScratchContext);
+          copyRegion(offsetPixels, alignedCandidatePixels, region);
+        }
+      }
+
+      drawDiffPixels(alignedDiffContext, refPixels, alignedCandidatePixels);
+      if (searchHasRun) {
+        drawOffsetGuide(alignedDiffContext, "offset");
+      }
+    }
+
+    function readFramePixels(image, context) {
+      context.drawImage(image, 0, 0, 240, 160);
+      return context.getImageData(0, 0, 240, 160);
+    }
+
+    function copyRegion(sourcePixels, targetPixels, region) {
+      for (let y = region.y; y < region.y + region.height; y += 1) {
+        for (let x = region.x; x < region.x + region.width; x += 1) {
+          const index = (y * 240 + x) * 4;
+          targetPixels.data[index] = sourcePixels.data[index];
+          targetPixels.data[index + 1] = sourcePixels.data[index + 1];
+          targetPixels.data[index + 2] = sourcePixels.data[index + 2];
+          targetPixels.data[index + 3] = sourcePixels.data[index + 3];
+        }
+      }
+    }
+
+    function drawDiffPixels(context, refPixels, candPixels) {
+      const diffPixels = context.createImageData(240, 160);
+
+      for (let index = 0; index < refPixels.data.length; index += 4) {
+        const dr = Math.abs(refPixels.data[index] - candPixels.data[index]);
+        const dg = Math.abs(refPixels.data[index + 1] - candPixels.data[index + 1]);
+        const db = Math.abs(refPixels.data[index + 2] - candPixels.data[index + 2]);
+        const changed = dr + dg + db > 24;
+
+        diffPixels.data[index] = changed ? 255 : 34;
+        diffPixels.data[index + 1] = changed ? 184 : 38;
+        diffPixels.data[index + 2] = changed ? 84 : 48;
+        diffPixels.data[index + 3] = 255;
+      }
+
+      context.putImageData(diffPixels, 0, 0);
+    }
+
+    function drawOffsetGuide(context, mode) {
+      for (const region of offsetRegions) {
+        const label = mode === "offset" ? `cand t${region.offset > 0 ? "+" : ""}${region.offset}` : "cand t+0";
+        context.save();
+        context.strokeStyle = region.color;
+        context.lineWidth = 2;
+        context.strokeRect(region.x + 0.5, region.y + 0.5, region.width - 1, region.height - 1);
+        context.fillStyle = "rgba(11, 13, 18, 0.88)";
+        context.fillRect(region.x + 5, region.y + 6, 64, 16);
+        context.fillStyle = region.color;
+        context.font = "10px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+        context.fillText(label, region.x + 9, region.y + 18);
+        context.restore();
+      }
+    }
+
+    async function computeOffsetSearch(region) {
+      const offsets = [];
+      for (let offset = -5; offset <= 5; offset += 1) {
+        let changedPixels = 0;
+        let totalPixels = 0;
+        let comparedFrames = 0;
+
+        for (let refFrameIndex = 0; refFrameIndex < frameCount; refFrameIndex += 1) {
+          const candidateIndex = refFrameIndex + offset;
+          if (candidateIndex < 0 || candidateIndex >= candidateFrameCount) {
+            continue;
+          }
+
+          const [referenceImage, candidateImage] = await Promise.all([
+            imageReady(loadReferenceFrame(refFrameIndex)),
+            imageReady(loadCandidateFrame(candidateIndex)),
+          ]);
+          const refPixels = readFramePixels(referenceImage, refScratchContext);
+          const candPixels = readFramePixels(candidateImage, candScratchContext);
+
+          for (let y = region.y; y < region.y + region.height; y += 1) {
+            for (let x = region.x; x < region.x + region.width; x += 1) {
+              const index = (y * 240 + x) * 4;
+              const dr = Math.abs(refPixels.data[index] - candPixels.data[index]);
+              const dg = Math.abs(refPixels.data[index + 1] - candPixels.data[index + 1]);
+              const db = Math.abs(refPixels.data[index + 2] - candPixels.data[index + 2]);
+              if (dr + dg + db > 24) {
+                changedPixels += 1;
+              }
+              totalPixels += 1;
+            }
+          }
+          comparedFrames += 1;
+        }
+
+        offsets.push({
+          offset,
+          error: totalPixels > 0 ? changedPixels / totalPixels : 1,
+          comparedFrames,
+        });
+      }
+      return offsets;
+    }
+
+    function formatOffset(offset) {
+      const sign = offset > 0 ? "+" : "";
+      const unit = Math.abs(offset) === 1 ? "frame" : "frames";
+      return `offset ${sign}${offset} ${unit}`;
+    }
+
+    function updateSummaryAfterSearch() {
+      const topRegion = offsetRegions.find((region) => region.name === "top_right");
+      const bottomRegion = offsetRegions.find((region) => region.name === "bottom_right");
+      if (topRegion) {
+        topOffsetSummary.textContent = formatOffset(topRegion.offset);
+      }
+      if (bottomRegion) {
+        bottomOffsetSummary.textContent = formatOffset(bottomRegion.offset);
+      }
+    }
+
+    async function renderOffsetSearch() {
+      runSearchButton.disabled = true;
+      searchStatus.textContent = "Scanning offsets -5..+5";
+      offsetSearchPanel.innerHTML = '<div class="search-card">Scanning offsets -5..+5</div>';
+
+      const cards = await Promise.all(offsetRegions.map(async (region) => {
+        const offsets = await computeOffsetSearch(region);
+        const best = offsets.reduce((currentBest, item) => {
+          if (item.error < currentBest.error) {
+            return item;
+          }
+          if (item.error === currentBest.error && Math.abs(item.offset) < Math.abs(currentBest.offset)) {
+            return item;
+          }
+          return currentBest;
+        }, offsets[0]);
+        const worstError = Math.max(...offsets.map((item) => item.error), 0.001);
+        const bars = offsets.map((item) => {
+          const isBest = item.offset === best.offset;
+          const height = 8 + (item.error / worstError) * 98;
+          const label = `${item.offset > 0 ? "+" : ""}${item.offset}`;
+          return `
+            <div class="search-bar ${isBest ? "is-best" : ""}" style="color: ${region.color}" title="offset ${label}, error ${item.error.toFixed(3)}">
+              <div class="search-bar-fill" style="height: ${height}px"></div>
+              <div class="search-bar-label">${label}</div>
+            </div>
+          `;
+        }).join("");
+        const bestLabel = `${best.offset > 0 ? "+" : ""}${best.offset}`;
+        return `
+          <div class="search-card">
+            <div class="search-card-title">
+              <span>${region.name}</span>
+              <span style="color: ${region.color}">best t${bestLabel}</span>
+            </div>
+            <div class="search-bars" id="searchBars">${bars}</div>
+          </div>
+        `;
+      }));
+
+      offsetSearchPanel.innerHTML = cards.join("");
+      searchHasRun = true;
+      updateSummaryAfterSearch();
+      drawCurrentDiff();
+      drawAlignedDiff();
+      searchStatus.textContent = "Search complete; boxes are now revealed";
+      runSearchButton.disabled = false;
+    }
+
+    function stop() {
+      playing = false;
+      playPause.textContent = "▶";
+      if (timer !== null) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function play() {
+      playing = true;
+      playPause.textContent = "⏸";
+      timer = window.setInterval(() => render(frame + 1), 180);
+    }
+
+    playPause.addEventListener("click", () => {
+      if (playing) {
+        stop();
+      } else {
+        play();
+      }
+    });
+
+    frameSlider.addEventListener("input", (event) => {
+      render(Number(event.target.value));
+    });
+
+    refFrame.addEventListener("load", () => {
+      drawCurrentDiff();
+      drawAlignedDiff();
+    });
+    candFrame.addEventListener("load", () => {
+      drawCurrentDiff();
+      drawAlignedDiff();
+    });
+
+    render(0);
+    runSearchButton.addEventListener("click", renderOffsetSearch);
+  </script>
+</body>
+</html>
