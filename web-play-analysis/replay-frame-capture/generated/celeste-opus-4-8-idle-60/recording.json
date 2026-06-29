@@ -1,0 +1,341 @@
+{
+  "source": "replay-frame-capture",
+  "replay": {
+    "path": "Celeste Classic (1).replay",
+    "recording": "Celeste Classic",
+    "date": "2026-06-29T18:04:34.330Z",
+    "total_frames": 368,
+    "event_count": 1,
+    "events": [
+      {
+        "frame": 0,
+        "keys": 0
+      }
+    ]
+  },
+  "rom": {
+    "path": "corpus/roms/homebrew/celeste-classic.gba",
+    "bytes": 5418424
+  },
+  "reference": {
+    "label": "Mesen",
+    "wasm": "web-play-analysis/live-assets/wasm/mesen_step.wasm",
+    "boot_frames": 6
+  },
+  "candidate": {
+    "id": "claude-opus-4-8",
+    "label": "claude-opus-4-8",
+    "wasm": "web-play-analysis/live-assets/results/claude-opus-4-8/candidate.wasm",
+    "boot_frames": 0
+  },
+  "width": 240,
+  "height": 160,
+  "captured_frames": 60,
+  "frame_sets": {
+    "reference": "reference/frame_0000.png",
+    "candidate": "candidate/frame_0000.png",
+    "diff": "diff/frame_0000.png"
+  },
+  "per_frame": [
+    {
+      "frame": 0,
+      "keys": 0,
+      "changed_pixels": 0
+    },
+    {
+      "frame": 1,
+      "keys": 0,
+      "changed_pixels": 0
+    },
+    {
+      "frame": 2,
+      "keys": 0,
+      "changed_pixels": 30240
+    },
+    {
+      "frame": 3,
+      "keys": 0,
+      "changed_pixels": 38400
+    },
+    {
+      "frame": 4,
+      "keys": 0,
+      "changed_pixels": 38400
+    },
+    {
+      "frame": 5,
+      "keys": 0,
+      "changed_pixels": 38400
+    },
+    {
+      "frame": 6,
+      "keys": 0,
+      "changed_pixels": 5651
+    },
+    {
+      "frame": 7,
+      "keys": 0,
+      "changed_pixels": 611
+    },
+    {
+      "frame": 8,
+      "keys": 0,
+      "changed_pixels": 608
+    },
+    {
+      "frame": 9,
+      "keys": 0,
+      "changed_pixels": 355
+    },
+    {
+      "frame": 10,
+      "keys": 0,
+      "changed_pixels": 86
+    },
+    {
+      "frame": 11,
+      "keys": 0,
+      "changed_pixels": 86
+    },
+    {
+      "frame": 12,
+      "keys": 0,
+      "changed_pixels": 84
+    },
+    {
+      "frame": 13,
+      "keys": 0,
+      "changed_pixels": 84
+    },
+    {
+      "frame": 14,
+      "keys": 0,
+      "changed_pixels": 86
+    },
+    {
+      "frame": 15,
+      "keys": 0,
+      "changed_pixels": 86
+    },
+    {
+      "frame": 16,
+      "keys": 0,
+      "changed_pixels": 83
+    },
+    {
+      "frame": 17,
+      "keys": 0,
+      "changed_pixels": 83
+    },
+    {
+      "frame": 18,
+      "keys": 0,
+      "changed_pixels": 84
+    },
+    {
+      "frame": 19,
+      "keys": 0,
+      "changed_pixels": 84
+    },
+    {
+      "frame": 20,
+      "keys": 0,
+      "changed_pixels": 88
+    },
+    {
+      "frame": 21,
+      "keys": 0,
+      "changed_pixels": 88
+    },
+    {
+      "frame": 22,
+      "keys": 0,
+      "changed_pixels": 82
+    },
+    {
+      "frame": 23,
+      "keys": 0,
+      "changed_pixels": 82
+    },
+    {
+      "frame": 24,
+      "keys": 0,
+      "changed_pixels": 89
+    },
+    {
+      "frame": 25,
+      "keys": 0,
+      "changed_pixels": 89
+    },
+    {
+      "frame": 26,
+      "keys": 0,
+      "changed_pixels": 94
+    },
+    {
+      "frame": 27,
+      "keys": 0,
+      "changed_pixels": 94
+    },
+    {
+      "frame": 28,
+      "keys": 0,
+      "changed_pixels": 94
+    },
+    {
+      "frame": 29,
+      "keys": 0,
+      "changed_pixels": 94
+    },
+    {
+      "frame": 30,
+      "keys": 0,
+      "changed_pixels": 93
+    },
+    {
+      "frame": 31,
+      "keys": 0,
+      "changed_pixels": 93
+    },
+    {
+      "frame": 32,
+      "keys": 0,
+      "changed_pixels": 92
+    },
+    {
+      "frame": 33,
+      "keys": 0,
+      "changed_pixels": 92
+    },
+    {
+      "frame": 34,
+      "keys": 0,
+      "changed_pixels": 87
+    },
+    {
+      "frame": 35,
+      "keys": 0,
+      "changed_pixels": 87
+    },
+    {
+      "frame": 36,
+      "keys": 0,
+      "changed_pixels": 83
+    },
+    {
+      "frame": 37,
+      "keys": 0,
+      "changed_pixels": 83
+    },
+    {
+      "frame": 38,
+      "keys": 0,
+      "changed_pixels": 92
+    },
+    {
+      "frame": 39,
+      "keys": 0,
+      "changed_pixels": 92
+    },
+    {
+      "frame": 40,
+      "keys": 0,
+      "changed_pixels": 88
+    },
+    {
+      "frame": 41,
+      "keys": 0,
+      "changed_pixels": 88
+    },
+    {
+      "frame": 42,
+      "keys": 0,
+      "changed_pixels": 87
+    },
+    {
+      "frame": 43,
+      "keys": 0,
+      "changed_pixels": 87
+    },
+    {
+      "frame": 44,
+      "keys": 0,
+      "changed_pixels": 86
+    },
+    {
+      "frame": 45,
+      "keys": 0,
+      "changed_pixels": 86
+    },
+    {
+      "frame": 46,
+      "keys": 0,
+      "changed_pixels": 82
+    },
+    {
+      "frame": 47,
+      "keys": 0,
+      "changed_pixels": 82
+    },
+    {
+      "frame": 48,
+      "keys": 0,
+      "changed_pixels": 87
+    },
+    {
+      "frame": 49,
+      "keys": 0,
+      "changed_pixels": 87
+    },
+    {
+      "frame": 50,
+      "keys": 0,
+      "changed_pixels": 85
+    },
+    {
+      "frame": 51,
+      "keys": 0,
+      "changed_pixels": 85
+    },
+    {
+      "frame": 52,
+      "keys": 0,
+      "changed_pixels": 91
+    },
+    {
+      "frame": 53,
+      "keys": 0,
+      "changed_pixels": 91
+    },
+    {
+      "frame": 54,
+      "keys": 0,
+      "changed_pixels": 92
+    },
+    {
+      "frame": 55,
+      "keys": 0,
+      "changed_pixels": 92
+    },
+    {
+      "frame": 56,
+      "keys": 0,
+      "changed_pixels": 84
+    },
+    {
+      "frame": 57,
+      "keys": 0,
+      "changed_pixels": 84
+    },
+    {
+      "frame": 58,
+      "keys": 0,
+      "changed_pixels": 81
+    },
+    {
+      "frame": 59,
+      "keys": 0,
+      "changed_pixels": 81
+    }
+  ]
+}

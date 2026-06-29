@@ -1,0 +1,82 @@
+{
+  "audit_luma_mae_mean": 17.215885162353516,
+  "compared_frames": 60,
+  "diverging_frames": 58,
+  "first_diverge_frame": 2,
+  "frame_diff_threshold": 0.09391569346189499,
+  "max_diff_frame": 3,
+  "max_diff_pixels": 38400,
+  "replay_score_deduped": 0.6225125193595886,
+  "temporal_summary": {
+    "classification": "mixed_local_time_shifts",
+    "global_best_defect": 0.0022299503907561302,
+    "global_best_offset": 4,
+    "global_improvement": 0.16592217981815338,
+    "global_lockstep_defect": 0.1681521236896515,
+    "has_mixed_local_offsets": true,
+    "local_offsets": [
+      {
+        "height": 160,
+        "location_label": "middle_center",
+        "mean_confidence": 0.017787940800189972,
+        "mean_improvement": 0.06852435320615768,
+        "offset": 4,
+        "region_count": 2,
+        "tile_count": 360,
+        "width": 240,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "height": 10,
+        "location_label": "top_center",
+        "mean_confidence": 0.012416455894708633,
+        "mean_improvement": 0.051789477467536926,
+        "offset": 3,
+        "region_count": 1,
+        "tile_count": 24,
+        "width": 240,
+        "x": 0,
+        "y": 20
+      }
+    ],
+    "region_count": 3,
+    "top_regions": [
+      {
+        "height": 130,
+        "mean_confidence": 0.017820995301008224,
+        "mean_improvement": 0.0687994658946991,
+        "mean_motion_defect": 0.018304554745554924,
+        "offset": 4,
+        "tile_count": 312,
+        "width": 240,
+        "x": 0,
+        "y": 30
+      },
+      {
+        "height": 20,
+        "mean_confidence": 0.017573093995451927,
+        "mean_improvement": 0.06673610955476761,
+        "mean_motion_defect": 0.016977408900856972,
+        "offset": 4,
+        "tile_count": 48,
+        "width": 240,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "height": 10,
+        "mean_confidence": 0.012416455894708633,
+        "mean_improvement": 0.051789477467536926,
+        "mean_motion_defect": 0.018870053812861443,
+        "offset": 3,
+        "tile_count": 24,
+        "width": 240,
+        "x": 0,
+        "y": 20
+      }
+    ]
+  },
+  "total_diff_pixels": 157025,
+  "video_score": 0.6432603411258854
+}
