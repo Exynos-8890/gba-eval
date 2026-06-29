@@ -1,7 +1,7 @@
 {
   "source": "replay-frame-capture",
   "replay": {
-    "path": "Celeste Classic (1).replay",
+    "path": "web-play-analysis/replay-frame-capture/replays/replay1.replay",
     "recording": "Celeste Classic",
     "date": "2026-06-29T18:04:34.330Z",
     "total_frames": 368,

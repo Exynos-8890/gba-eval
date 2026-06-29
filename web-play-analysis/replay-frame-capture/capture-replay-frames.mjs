@@ -18,11 +18,11 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "../..");
 
 const defaults = {
-  replay: "Celeste Classic (1).replay",
+  replay: "web-play-analysis/replay-frame-capture/replays/replay1.replay",
   rom: "corpus/roms/homebrew/celeste-classic.gba",
   candidateId: "claude-opus-4-8",
   frames: 60,
-  out: "web-play-analysis/replay-frame-capture/generated/celeste-opus-4-8-idle-60",
+  out: "web-play-analysis/replay-frame-capture/generated/replay1",
 };
 
 const args = parseArgs(process.argv.slice(2));
