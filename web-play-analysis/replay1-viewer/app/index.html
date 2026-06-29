@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Replay 1 Viewer</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="replay1-viewer shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Replay Frame Viewer</div>
+          <h1>Replay 1 / Celeste Classic / Claude Opus 4.8</h1>
+          <p>Idle replay capture, first 60 frames, rendered from Mesen reference and candidate WASM.</p>
+        </div>
+        <div class="verdict">
+          <span class="status-dot"></span>
+          <span id="classification">loading</span>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="Temporal Summary">
+        <article>
+          <span>Temporal Summary</span>
+          <strong id="summaryLabel">loading</strong>
+        </article>
+        <article>
+          <span>Global offset</span>
+          <strong id="globalOffset">--</strong>
+        </article>
+        <article>
+          <span>First diverge</span>
+          <strong id="firstDiverge">--</strong>
+        </article>
+        <article>
+          <span>Changed pixels</span>
+          <strong id="changedPixels">--</strong>
+        </article>
+      </section>
+
+      <section class="stage" aria-label="frame comparison">
+        <article class="panel">
+          <div class="panel-title">
+            <span>Reference</span>
+            <span class="frame-index" id="referenceLabel">frame_0000.png</span>
+          </div>
+          <div class="viewport">
+            <img class="gba-frame" id="referenceFrame" alt="Reference frame" />
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <span>Candidate</span>
+            <span class="frame-index" id="candidateLabel">frame_0000.png</span>
+          </div>
+          <div class="viewport">
+            <img class="gba-frame" id="candidateFrame" alt="Candidate frame" />
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-title">
+            <span>Diff</span>
+            <span class="frame-index" id="diffLabel">frame_0000.png</span>
+          </div>
+          <div class="viewport">
+            <div class="frame-stack diff-overlay">
+              <img class="gba-frame diff-frame" id="diffFrame" alt="Difference frame" />
+              <canvas id="diffCanvas" class="diff-canvas" width="240" height="160" aria-label="Detected offset boxes"></canvas>
+              <div class="region-box-layer" id="regionBoxLayer"></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="transport" aria-label="timeline controls">
+        <button id="playPause" type="button">Play</button>
+        <input id="frameSlider" type="range" min="0" max="59" value="0" step="1" aria-label="Frame" />
+        <div class="frame-readout" id="frameReadout">0 / 59</div>
+      </section>
+
+      <section class="analysis-grid" aria-label="detected temporal evidence">
+        <article class="panel detail-panel">
+          <div class="panel-title">
+            <span>Offset Search Evidence</span>
+            <button class="mini-button" id="runSearchButton" type="button">Run search</button>
+          </div>
+          <div class="search-status" id="searchStatus">best offset from lowest error</div>
+          <div class="offset-list" id="offsetSearchPanel"></div>
+        </article>
+
+        <article class="panel comparison-panel">
+          <div class="panel-title">
+            <span>Selected Region</span>
+            <span class="frame-index" id="selectedRegionLabel">none</span>
+          </div>
+          <div class="region-comparison">
+            <canvas class="comparison-canvas" id="regionCompareCanvas" width="720" height="220" aria-label="Offset aligned region comparison"></canvas>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
