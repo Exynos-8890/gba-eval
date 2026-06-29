@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { encodePngRgba, keysAt, parseReplayText, writeDiffImage } from "./capture-utils.mjs";
+import { encodePngRgba, keysAt, parseReplayText, selectFrameRange, writeDiffImage } from "./capture-utils.mjs";
 
 test("parses website replay metadata and key events", () => {
   const replay = parseReplayText(`# Recording: Celeste Classic
@@ -46,4 +46,12 @@ test("writes a nonzero diff for changed rgba pixels", () => {
   assert.equal(output[3], 255);
   assert.equal(output[7], 255);
   assert.notEqual(output[4] + output[5] + output[6], 0);
+});
+
+test("selects the final replay frames when last is requested", () => {
+  assert.deepEqual(selectFrameRange({ totalFrames: 702, frames: 100, last: true }), {
+    startFrame: 602,
+    endFrame: 702,
+    captureFrames: 100,
+  });
 });

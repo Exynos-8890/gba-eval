@@ -1,0 +1,551 @@
+{
+  "source": "replay-frame-capture",
+  "replay": {
+    "path": "web-play-analysis/replay-frame-capture/replays/replay2.replay",
+    "recording": "Celeste Classic",
+    "date": "2026-06-29T18:42:53.745Z",
+    "total_frames": 702,
+    "event_count": 3,
+    "events": [
+      {
+        "frame": 0,
+        "keys": 0
+      },
+      {
+        "frame": 51,
+        "keys": 8
+      },
+      {
+        "frame": 58,
+        "keys": 0
+      }
+    ]
+  },
+  "rom": {
+    "path": "corpus/roms/homebrew/celeste-classic.gba",
+    "bytes": 5418424
+  },
+  "reference": {
+    "label": "Mesen",
+    "wasm": "web-play-analysis/live-assets/wasm/mesen_step.wasm",
+    "boot_frames": 6
+  },
+  "candidate": {
+    "id": "claude-opus-4-8",
+    "label": "claude-opus-4-8",
+    "wasm": "web-play-analysis/live-assets/results/claude-opus-4-8/candidate.wasm",
+    "boot_frames": 0
+  },
+  "width": 240,
+  "height": 160,
+  "captured_frames": 100,
+  "start_frame": 602,
+  "end_frame_exclusive": 702,
+  "frame_sets": {
+    "reference": "reference/frame_0602.png",
+    "candidate": "candidate/frame_0602.png",
+    "diff": "diff/frame_0602.png"
+  },
+  "per_frame": [
+    {
+      "frame": 602,
+      "keys": 0,
+      "changed_pixels": 185
+    },
+    {
+      "frame": 603,
+      "keys": 0,
+      "changed_pixels": 210
+    },
+    {
+      "frame": 604,
+      "keys": 0,
+      "changed_pixels": 204
+    },
+    {
+      "frame": 605,
+      "keys": 0,
+      "changed_pixels": 226
+    },
+    {
+      "frame": 606,
+      "keys": 0,
+      "changed_pixels": 233
+    },
+    {
+      "frame": 607,
+      "keys": 0,
+      "changed_pixels": 243
+    },
+    {
+      "frame": 608,
+      "keys": 0,
+      "changed_pixels": 235
+    },
+    {
+      "frame": 609,
+      "keys": 0,
+      "changed_pixels": 216
+    },
+    {
+      "frame": 610,
+      "keys": 0,
+      "changed_pixels": 231
+    },
+    {
+      "frame": 611,
+      "keys": 0,
+      "changed_pixels": 211
+    },
+    {
+      "frame": 612,
+      "keys": 0,
+      "changed_pixels": 208
+    },
+    {
+      "frame": 613,
+      "keys": 0,
+      "changed_pixels": 231
+    },
+    {
+      "frame": 614,
+      "keys": 0,
+      "changed_pixels": 239
+    },
+    {
+      "frame": 615,
+      "keys": 0,
+      "changed_pixels": 258
+    },
+    {
+      "frame": 616,
+      "keys": 0,
+      "changed_pixels": 248
+    },
+    {
+      "frame": 617,
+      "keys": 0,
+      "changed_pixels": 249
+    },
+    {
+      "frame": 618,
+      "keys": 0,
+      "changed_pixels": 257
+    },
+    {
+      "frame": 619,
+      "keys": 0,
+      "changed_pixels": 261
+    },
+    {
+      "frame": 620,
+      "keys": 0,
+      "changed_pixels": 257
+    },
+    {
+      "frame": 621,
+      "keys": 0,
+      "changed_pixels": 254
+    },
+    {
+      "frame": 622,
+      "keys": 0,
+      "changed_pixels": 259
+    },
+    {
+      "frame": 623,
+      "keys": 0,
+      "changed_pixels": 254
+    },
+    {
+      "frame": 624,
+      "keys": 0,
+      "changed_pixels": 254
+    },
+    {
+      "frame": 625,
+      "keys": 0,
+      "changed_pixels": 243
+    },
+    {
+      "frame": 626,
+      "keys": 0,
+      "changed_pixels": 237
+    },
+    {
+      "frame": 627,
+      "keys": 0,
+      "changed_pixels": 218
+    },
+    {
+      "frame": 628,
+      "keys": 0,
+      "changed_pixels": 223
+    },
+    {
+      "frame": 629,
+      "keys": 0,
+      "changed_pixels": 212
+    },
+    {
+      "frame": 630,
+      "keys": 0,
+      "changed_pixels": 219
+    },
+    {
+      "frame": 631,
+      "keys": 0,
+      "changed_pixels": 221
+    },
+    {
+      "frame": 632,
+      "keys": 0,
+      "changed_pixels": 212
+    },
+    {
+      "frame": 633,
+      "keys": 0,
+      "changed_pixels": 236
+    },
+    {
+      "frame": 634,
+      "keys": 0,
+      "changed_pixels": 253
+    },
+    {
+      "frame": 635,
+      "keys": 0,
+      "changed_pixels": 267
+    },
+    {
+      "frame": 636,
+      "keys": 0,
+      "changed_pixels": 256
+    },
+    {
+      "frame": 637,
+      "keys": 0,
+      "changed_pixels": 247
+    },
+    {
+      "frame": 638,
+      "keys": 0,
+      "changed_pixels": 253
+    },
+    {
+      "frame": 639,
+      "keys": 0,
+      "changed_pixels": 262
+    },
+    {
+      "frame": 640,
+      "keys": 0,
+      "changed_pixels": 250
+    },
+    {
+      "frame": 641,
+      "keys": 0,
+      "changed_pixels": 292
+    },
+    {
+      "frame": 642,
+      "keys": 0,
+      "changed_pixels": 299
+    },
+    {
+      "frame": 643,
+      "keys": 0,
+      "changed_pixels": 348
+    },
+    {
+      "frame": 644,
+      "keys": 0,
+      "changed_pixels": 343
+    },
+    {
+      "frame": 645,
+      "keys": 0,
+      "changed_pixels": 344
+    },
+    {
+      "frame": 646,
+      "keys": 0,
+      "changed_pixels": 349
+    },
+    {
+      "frame": 647,
+      "keys": 0,
+      "changed_pixels": 312
+    },
+    {
+      "frame": 648,
+      "keys": 0,
+      "changed_pixels": 311
+    },
+    {
+      "frame": 649,
+      "keys": 0,
+      "changed_pixels": 265
+    },
+    {
+      "frame": 650,
+      "keys": 0,
+      "changed_pixels": 271
+    },
+    {
+      "frame": 651,
+      "keys": 0,
+      "changed_pixels": 238
+    },
+    {
+      "frame": 652,
+      "keys": 0,
+      "changed_pixels": 232
+    },
+    {
+      "frame": 653,
+      "keys": 0,
+      "changed_pixels": 240
+    },
+    {
+      "frame": 654,
+      "keys": 0,
+      "changed_pixels": 246
+    },
+    {
+      "frame": 655,
+      "keys": 0,
+      "changed_pixels": 235
+    },
+    {
+      "frame": 656,
+      "keys": 0,
+      "changed_pixels": 237
+    },
+    {
+      "frame": 657,
+      "keys": 0,
+      "changed_pixels": 233
+    },
+    {
+      "frame": 658,
+      "keys": 0,
+      "changed_pixels": 225
+    },
+    {
+      "frame": 659,
+      "keys": 0,
+      "changed_pixels": 257
+    },
+    {
+      "frame": 660,
+      "keys": 0,
+      "changed_pixels": 260
+    },
+    {
+      "frame": 661,
+      "keys": 0,
+      "changed_pixels": 242
+    },
+    {
+      "frame": 662,
+      "keys": 0,
+      "changed_pixels": 240
+    },
+    {
+      "frame": 663,
+      "keys": 0,
+      "changed_pixels": 227
+    },
+    {
+      "frame": 664,
+      "keys": 0,
+      "changed_pixels": 230
+    },
+    {
+      "frame": 665,
+      "keys": 0,
+      "changed_pixels": 266
+    },
+    {
+      "frame": 666,
+      "keys": 0,
+      "changed_pixels": 256
+    },
+    {
+      "frame": 667,
+      "keys": 0,
+      "changed_pixels": 268
+    },
+    {
+      "frame": 668,
+      "keys": 0,
+      "changed_pixels": 271
+    },
+    {
+      "frame": 669,
+      "keys": 0,
+      "changed_pixels": 213
+    },
+    {
+      "frame": 670,
+      "keys": 0,
+      "changed_pixels": 197
+    },
+    {
+      "frame": 671,
+      "keys": 0,
+      "changed_pixels": 146
+    },
+    {
+      "frame": 672,
+      "keys": 0,
+      "changed_pixels": 152
+    },
+    {
+      "frame": 673,
+      "keys": 0,
+      "changed_pixels": 172
+    },
+    {
+      "frame": 674,
+      "keys": 0,
+      "changed_pixels": 175
+    },
+    {
+      "frame": 675,
+      "keys": 0,
+      "changed_pixels": 214
+    },
+    {
+      "frame": 676,
+      "keys": 0,
+      "changed_pixels": 224
+    },
+    {
+      "frame": 677,
+      "keys": 0,
+      "changed_pixels": 249
+    },
+    {
+      "frame": 678,
+      "keys": 0,
+      "changed_pixels": 248
+    },
+    {
+      "frame": 679,
+      "keys": 0,
+      "changed_pixels": 265
+    },
+    {
+      "frame": 680,
+      "keys": 0,
+      "changed_pixels": 274
+    },
+    {
+      "frame": 681,
+      "keys": 0,
+      "changed_pixels": 308
+    },
+    {
+      "frame": 682,
+      "keys": 0,
+      "changed_pixels": 294
+    },
+    {
+      "frame": 683,
+      "keys": 0,
+      "changed_pixels": 294
+    },
+    {
+      "frame": 684,
+      "keys": 0,
+      "changed_pixels": 295
+    },
+    {
+      "frame": 685,
+      "keys": 0,
+      "changed_pixels": 259
+    },
+    {
+      "frame": 686,
+      "keys": 0,
+      "changed_pixels": 253
+    },
+    {
+      "frame": 687,
+      "keys": 0,
+      "changed_pixels": 237
+    },
+    {
+      "frame": 688,
+      "keys": 0,
+      "changed_pixels": 243
+    },
+    {
+      "frame": 689,
+      "keys": 0,
+      "changed_pixels": 227
+    },
+    {
+      "frame": 690,
+      "keys": 0,
+      "changed_pixels": 225
+    },
+    {
+      "frame": 691,
+      "keys": 0,
+      "changed_pixels": 216
+    },
+    {
+      "frame": 692,
+      "keys": 0,
+      "changed_pixels": 223
+    },
+    {
+      "frame": 693,
+      "keys": 0,
+      "changed_pixels": 228
+    },
+    {
+      "frame": 694,
+      "keys": 0,
+      "changed_pixels": 233
+    },
+    {
+      "frame": 695,
+      "keys": 0,
+      "changed_pixels": 255
+    },
+    {
+      "frame": 696,
+      "keys": 0,
+      "changed_pixels": 252
+    },
+    {
+      "frame": 697,
+      "keys": 0,
+      "changed_pixels": 276
+    },
+    {
+      "frame": 698,
+      "keys": 0,
+      "changed_pixels": 276
+    },
+    {
+      "frame": 699,
+      "keys": 0,
+      "changed_pixels": 280
+    },
+    {
+      "frame": 700,
+      "keys": 0,
+      "changed_pixels": 283
+    },
+    {
+      "frame": 701,
+      "keys": 0,
+      "changed_pixels": 234
+    }
+  ]
+}

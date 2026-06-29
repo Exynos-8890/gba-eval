@@ -1,0 +1,59 @@
+{
+  "audit_luma_mae_mean": 0.4774194061756134,
+  "compared_frames": 100,
+  "diverging_frames": 100,
+  "first_diverge_frame": 0,
+  "frame_diff_threshold": 0.0187485720962286,
+  "max_diff_frame": 44,
+  "max_diff_pixels": 349,
+  "replay_score_deduped": 0.3048238754272461,
+  "temporal_summary": {
+    "classification": "global_time_shift",
+    "global_best_defect": 0.0,
+    "global_best_offset": 4,
+    "global_improvement": 0.02483651600778103,
+    "global_lockstep_defect": 0.02483651600778103,
+    "has_mixed_local_offsets": false,
+    "local_offsets": [
+      {
+        "height": 140,
+        "location_label": "middle_center",
+        "mean_confidence": 0.0061581251211464405,
+        "mean_improvement": 0.01989753358066082,
+        "offset": 4,
+        "region_count": 2,
+        "tile_count": 122,
+        "width": 140,
+        "x": 50,
+        "y": 10
+      }
+    ],
+    "region_count": 2,
+    "top_regions": [
+      {
+        "height": 140,
+        "mean_confidence": 0.006236198823899031,
+        "mean_improvement": 0.02015915885567665,
+        "mean_motion_defect": 0.00632070517167449,
+        "offset": 4,
+        "tile_count": 120,
+        "width": 140,
+        "x": 50,
+        "y": 10
+      },
+      {
+        "height": 10,
+        "mean_confidence": 0.0014736842131242156,
+        "mean_improvement": 0.004199999384582043,
+        "mean_motion_defect": 0.0014646465424448252,
+        "offset": 4,
+        "tile_count": 2,
+        "width": 20,
+        "x": 170,
+        "y": 70
+      }
+    ]
+  },
+  "total_diff_pixels": 24689,
+  "video_score": 0.3048238845010615
+}

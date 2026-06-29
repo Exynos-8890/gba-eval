@@ -55,6 +55,25 @@ export function frameName(kind, index, extension = "png") {
   return `${kind}/frame_${String(index).padStart(4, "0")}.${extension}`;
 }
 
+export function selectFrameRange({ totalFrames, frames, last = false }) {
+  const frameCount = Number.parseInt(frames, 10);
+  const total = Number.parseInt(totalFrames, 10);
+  if (!Number.isFinite(frameCount) || frameCount <= 0) {
+    throw new Error("frames must be a positive integer");
+  }
+  if (!Number.isFinite(total) || total <= 0) {
+    throw new Error("totalFrames must be a positive integer");
+  }
+
+  const captureFrames = Math.min(frameCount, total);
+  const startFrame = last ? total - captureFrames : 0;
+  return {
+    startFrame,
+    endFrame: startFrame + captureFrames,
+    captureFrames,
+  };
+}
+
 export function writeDiffImage(reference, candidate, output, pixels = PIXELS) {
   let changed = 0;
   for (let pixel = 0; pixel < pixels; pixel += 1) {

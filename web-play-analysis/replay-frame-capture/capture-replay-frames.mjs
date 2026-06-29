@@ -11,6 +11,7 @@ import {
   frameName,
   keysAt,
   parseReplayText,
+  selectFrameRange,
   writeDiffImage,
 } from "./capture-utils.mjs";
 
@@ -29,7 +30,7 @@ const args = parseArgs(process.argv.slice(2));
 const replayPath = resolve(repoRoot, args.replay ?? defaults.replay);
 const romPath = resolve(repoRoot, args.rom ?? defaults.rom);
 const candidateId = args.candidate ?? defaults.candidateId;
-const frameLimit = Number.parseInt(args.frames ?? String(defaults.frames), 10);
+const frameLimit = Number.parseInt(args.last ?? args.frames ?? String(defaults.frames), 10);
 const outDir = resolve(repoRoot, args.out ?? defaults.out);
 const candidatePath = resolve(repoRoot, `web-play-analysis/live-assets/results/${candidateId}/candidate.wasm`);
 const mesenWasmPath = resolve(repoRoot, "web-play-analysis/live-assets/wasm/mesen_step.wasm");
@@ -39,7 +40,11 @@ if (!Number.isFinite(frameLimit) || frameLimit <= 0) {
 }
 
 const replay = parseReplayText(await readFile(replayPath, "utf8"));
-const framesToCapture = Math.min(frameLimit, replay.totalFrames || frameLimit);
+const frameRange = selectFrameRange({
+  totalFrames: replay.totalFrames || frameLimit,
+  frames: frameLimit,
+  last: args.last !== undefined,
+});
 const rom = new Uint8Array(await readFile(romPath));
 const [reference, candidate] = await Promise.all([
   createMesenBackend(),
@@ -59,12 +64,16 @@ await mkdir(join(outDir, "diff"), { recursive: true });
 const diff = new Uint8Array(FRAME_BYTES);
 const perFrame = [];
 
-for (let frame = 0; frame < framesToCapture; frame += 1) {
+for (let frame = 0; frame < frameRange.endFrame; frame += 1) {
   const keys = keysAt(replay, frame);
   reference.setKeys(keys);
   candidate.setKeys(keys);
   reference.stepFrame();
   candidate.stepFrame();
+
+  if (frame < frameRange.startFrame) {
+    continue;
+  }
 
   const refFrame = copyFrame(reference.framebuffer());
   const candFrame = copyFrame(candidate.framebuffer());
@@ -110,11 +119,13 @@ const metadata = {
   },
   width: WIDTH,
   height: HEIGHT,
-  captured_frames: framesToCapture,
+  captured_frames: frameRange.captureFrames,
+  start_frame: frameRange.startFrame,
+  end_frame_exclusive: frameRange.endFrame,
   frame_sets: {
-    reference: "reference/frame_0000.png",
-    candidate: "candidate/frame_0000.png",
-    diff: "diff/frame_0000.png",
+    reference: frameName("reference", frameRange.startFrame),
+    candidate: frameName("candidate", frameRange.startFrame),
+    diff: frameName("diff", frameRange.startFrame),
   },
   per_frame: perFrame,
 };
@@ -123,7 +134,9 @@ await writeFile(join(outDir, "recording.json"), `${JSON.stringify(metadata, null
 
 console.log(JSON.stringify({
   out: relativePath(outDir),
-  frames: framesToCapture,
+  frames: frameRange.captureFrames,
+  start_frame: frameRange.startFrame,
+  end_frame_exclusive: frameRange.endFrame,
   candidate: candidateId,
   replay_events: replay.events.length,
   first_changed_pixels: perFrame[0]?.changed_pixels ?? 0,
